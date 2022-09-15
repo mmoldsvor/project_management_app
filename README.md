@@ -4,7 +4,7 @@ Project management app for students.
 ## Back end
 Start a local web server (localhost:5000) using the command:
 ```console
-$ docker-compose up
+$ docker compose up
 ```
 
 Port can be specified using the environment variable API_PORT. It is also required to update the port mapping in the compose.yml file.
