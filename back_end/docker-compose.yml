@@ -13,7 +13,7 @@ services:
       - "5000:5000"
 
   postgres:
-    image: postgres
+    image: postgres:14.5
     environment:
       POSTGRES_PASSWORD: postgres
     volumes:
@@ -23,7 +23,7 @@ services:
       - ./environment/postgres_secret.env
 
   pgadmin:
-    image: dpage/pgadmin4
+    image: dpage/pgadmin4:6.13
     environment:
       PGADMIN_DEFAULT_EMAIL: pgadmin@email.com
       PGADMIN_DEFAULT_PASSWORD: pgadmin
