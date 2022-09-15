@@ -9,6 +9,8 @@ services:
       - ./src:/opt/
     env_file:
       - ./environment/flask.env
+    depends_on:
+      - postgres
     ports:
       - "5000:5000"
 

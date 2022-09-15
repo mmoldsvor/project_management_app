@@ -2,7 +2,7 @@ import os
 from peewee import *
 
 
-database_name = os.getenv('DATABASE_NAME', default='testing_db')
+database_name = os.getenv('DATABASE_NAME', default='postgres')
 database = PostgresqlDatabase(database_name, user='postgres', password='postgres', host='postgres')
 
 
