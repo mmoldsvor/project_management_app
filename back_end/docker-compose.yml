@@ -1,4 +1,5 @@
 version: "3.9"
+
 services:
   flask:
     build:
@@ -10,3 +11,30 @@ services:
       - ./environment/flask.env
     ports:
       - "5000:5000"
+
+  postgres:
+    image: postgres
+    environment:
+      POSTGRES_PASSWORD: postgres
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    env_file:
+      - ./environment/postgres.env
+      - ./environment/postgres_secret.env
+
+  pgadmin:
+    image: dpage/pgadmin4
+    environment:
+      PGADMIN_DEFAULT_EMAIL: pgadmin@email.com
+      PGADMIN_DEFAULT_PASSWORD: pgadmin
+    volumes:
+      - pgadmin-data:/var/lib/pgadmin
+    env_file:
+      - ./environment/pgadmin.env
+      - ./environment/pgadmin_secret.env
+    ports:
+      - "80:80"
+
+volumes:
+  postgres-data:
+  pgadmin-data:
