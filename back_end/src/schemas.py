@@ -7,7 +7,8 @@ class TestSchema(Schema):
 
     @pre_load
     def lowercase(self, data, **kwargs):
-        data['test_field'] = data['test_field'].lower().strip()
+        if 'test_field' in data:
+            data['test_field'] = data['test_field'].lower().strip()
         return data
 
 test_schema = TestSchema()
