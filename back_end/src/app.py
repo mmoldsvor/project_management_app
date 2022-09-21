@@ -1,7 +1,11 @@
 import os
 
-from flask import Flask
+from flask import Flask, request
+from marshmallow import ValidationError
+
 from database_models import database, TestTable
+from schemas import test_schema
+
 
 # TEMPORARY START
 if not 'testtable' in database.get_tables():
@@ -34,6 +38,19 @@ def index():
 
     TestTable.create(test_field='test 0')
     return 'test 0'
+
+
+@app.route('/data_test', methods=["POST"])
+def data_test():
+    input = request.get_json()
+    try:
+        data = test_schema.load(input)
+    except ValidationError as err:
+        return {"errors": err.messages}, 422
+
+    result = test_schema.dump(data)
+
+    return result
 
 
 port = int(os.getenv('API_PORT', default=5000))

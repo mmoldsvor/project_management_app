@@ -5,6 +5,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+    stop_signal: SIGINT
     volumes:
       - ./src:/opt/
     env_file:
