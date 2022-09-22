@@ -22,8 +22,6 @@ class ResourceLoading(Schema):
         for relation in data['relations']:
             if relation['source'] not in data['work_packages'] or relation['target'] not in data['work_packages']:
                 raise ValidationError('Relation between undefined work packages')
-            if 'source' not in relation and 'target' not in relation:
-                raise ValidationError('Either source or target is required')
 
 
 class Graph:
