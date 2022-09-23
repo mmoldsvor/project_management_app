@@ -18,7 +18,7 @@ class Graph:
         while queue:
             source = queue.pop(0)
             for target, edge in graph[source]:
-                yield source, target, edge
+                yield target, source, edge
 
                 if target not in visited:
                     visited.append(target)
