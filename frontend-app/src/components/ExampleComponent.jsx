@@ -12,7 +12,9 @@ export default function ExampleApplication() {
     const {state} = useLocation()
     const navigate = useNavigate()
     const [userState, setUserState] = useState({
-        projectType: undefined
+        projectType: undefined,
+        startDate: undefined,
+
     })
 
     const changeHandler = (e) => {

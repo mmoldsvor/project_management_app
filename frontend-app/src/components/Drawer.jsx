@@ -2,15 +2,10 @@ import {useState} from "react";
 import {
     Box,
     Button,
-    Divider,
     Drawer,
-    List,
-    ListItem,
-    ListItemButton,
-    ListItemIcon,
-    ListItemText,
     Typography
 } from "@mui/material";
+import "../styles/Drawer.scss"
 
 export default function InfoDrawer(props) {
     const [open, setOpen] = useState(false)
@@ -20,13 +15,13 @@ export default function InfoDrawer(props) {
 
     const InfoDrawer = () => (
         <Box
+            className="drawer"
             sx={'250'}
-            width={"300px"}
             role="presentation"
             onClick={() => toggleDrawer(false)}
             onKeyDown={() => toggleDrawer(false)}
         >
-            <Typography>
+            <Typography className="drawer__content">
                 {props.info_text}
             </Typography>
         </Box>
