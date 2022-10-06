@@ -24,7 +24,7 @@ def encrypt_password(password, salt=''):
     hash = hashlib.sha256(salted_password.encode()).hexdigest()
     return hash
 
-def generate_jwt(email, uuid, token_duration, secret):
+def generate_jwt(email, uuid, token_duration, secret, algorithm):
     current_timestamp = datetime.now(tz=timezone.utc)
     expiration_timestamp = current_timestamp + timedelta(seconds=token_duration)
     payload = {
@@ -35,8 +35,8 @@ def generate_jwt(email, uuid, token_duration, secret):
         'iat': int(current_timestamp.timestamp()),
     }
 
-    jwt_token = jwt.encode(payload, secret, algorithm='HS256')
-    return str(jwt_token)
+    token = jwt.encode(payload, secret, algorithm=algorithm)
+    return str(token)
 
 
 if __name__ == '__main__':

@@ -1,23 +1,25 @@
-import os
-
 import jwt
+
 from flask import Flask, request
 from marshmallow import ValidationError
+from peewee import IntegrityError, DoesNotExist
+
 from functools import wraps
+from configparser import ConfigParser
 
 from database_models import database, TestTable, UserTable
-from peewee import IntegrityError, DoesNotExist
 from schemas import test_schema
 from work_package import resource_loading_schema, traverse_package_graph
 from user_authentication import user_authentication_schema, generate_salt, encrypt_password, generate_jwt
 from graph import Graph
 
 
-# TEMPORARY START
-if not 'testtable' in database.get_tables():
-    from database_models import create_tables
-    create_tables()
-# TEMPORARY END
+config = ConfigParser()
+config.read('config.ini')
+
+token_secret = config['JWT']['secret']
+token_duration = int(config['JWT']['duration'])
+token_algorithm = config['JWT']['algorithm']
 
 
 app = Flask(__name__)
@@ -41,7 +43,7 @@ def auth_required(func):
             _, token = request.headers['Authorization'].split()
 
             try:
-                jwt_data = jwt.decode(token, 'abcdefghijklmnopqrstuvwxyz', algorithms=['HS256'])
+                jwt_data = jwt.decode(token, token_secret, algorithms=[token_algorithm])
             except Exception as e:
                 return str(e), 401
         else:
@@ -107,6 +109,7 @@ def create_user():
 
     return 'User created', 200 
 
+
 @app.route('/authenticate', methods=['POST'])
 def log_in():
     input = request.get_json()
@@ -115,7 +118,7 @@ def log_in():
     except ValidationError as err:
         return {'errors': err.messages}, 422
 
-    incorrect_login_message = 'User or password incorrect'
+    incorrect_login_message = 'Incorrect email or password'
     try:
         user = UserTable.get(UserTable.email == data['email'])
     except DoesNotExist as err:
@@ -126,10 +129,10 @@ def log_in():
     if (hash != user.hash):
         return incorrect_login_message, 400 
 
-    jwt_token = generate_jwt(data['email'], str(user.uuid), 3600, 'abcdefghijklmnopqrstuvwxyz')
+    token = generate_jwt(data['email'], str(user.uuid), token_duration, token_secret, token_algorithm)
     
-    return jwt_token, 200
+    return token, 200
 
 
-port = int(os.getenv('API_PORT', default=5000))
-app.run(host='0.0.0.0', port=port)
+app.run(host='0.0.0.0')
+

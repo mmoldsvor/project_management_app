@@ -8,6 +8,7 @@ services:
     stop_signal: SIGINT
     volumes:
       - ./src:/opt/
+      - ./config.ini:/opt/config.ini
     env_file:
       - ./environment/flask.env
     depends_on:

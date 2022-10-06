@@ -1,0 +1,4 @@
+[JWT]
+secret=<secret key>
+duration=<number of seconds until token expires>
+algorithm=HS256
