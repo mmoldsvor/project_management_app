@@ -1,13 +1,15 @@
 import os
 
+import jwt
 from flask import Flask, request
 from marshmallow import ValidationError
+from functools import wraps
 
 from database_models import database, TestTable, UserTable
 from peewee import IntegrityError, DoesNotExist
 from schemas import test_schema
 from work_package import resource_loading_schema, traverse_package_graph
-from user_authentication import user_authentication_schema, generate_salt, encrypt_password
+from user_authentication import user_authentication_schema, generate_salt, encrypt_password, generate_jwt
 from graph import Graph
 
 
@@ -32,17 +34,28 @@ def after_request(response):
     return response
 
 
-@app.route('/')
-def index():
-    results = TestTable.select(TestTable.id, TestTable.test_field).order_by(TestTable.id.desc()).limit(1)
+def auth_required(func):
+    @wraps(func)
+    def decorator(*args, **kwargs):
+        if 'Authorization' in request.headers:
+            _, token = request.headers['Authorization'].split()
 
-    if len(results) > 0:
-        TestTable.create(test_field=f'test {results[0].id}')
-        return results[0].test_field
+            try:
+                jwt_data = jwt.decode(token, 'abcdefghijklmnopqrstuvwxyz', algorithms=['HS256'])
+            except Exception as e:
+                return str(e), 401
+        else:
+            return 'Missing a valid token', 401
 
-    TestTable.create(test_field='test 0')
-    return 'test 0'
+        return func(jwt_data, *args, **kwargs)
+    return decorator
 
+
+@app.route('/', methods=['GET'])
+@auth_required
+def index(jwt_data):
+    return jwt_data
+    
 
 @app.route('/data_test', methods=['POST'])
 def data_test():
@@ -90,11 +103,11 @@ def create_user():
     try:
         uuid = UserTable.insert(email=data['email'], name=data['name'], salt=salt, hash=hash).execute()
     except IntegrityError as err:
-        return {'errors' : 'Email already in use'}, 422
+        return 'Email already in use', 400
 
-    return str(uuid)
+    return 'User created', 200 
 
-@app.route('/log_in', methods=['POST'])
+@app.route('/authenticate', methods=['POST'])
 def log_in():
     input = request.get_json()
     try:
@@ -102,17 +115,20 @@ def log_in():
     except ValidationError as err:
         return {'errors': err.messages}, 422
 
+    incorrect_login_message = 'User or password incorrect'
     try:
         user = UserTable.get(UserTable.email == data['email'])
     except DoesNotExist as err:
-        return {'errors': 'User does not exist'}, 422
+        return incorrect_login_message, 400
 
     hash = encrypt_password(data['password'], user.salt)
 
-    if (hash == user.hash):
-        return str(user.uuid)
+    if (hash != user.hash):
+        return incorrect_login_message, 400 
 
-    return 'Incorrect password'
+    jwt_token = generate_jwt(data['email'], str(user.uuid), 3600, 'abcdefghijklmnopqrstuvwxyz')
+    
+    return jwt_token, 200
 
 
 port = int(os.getenv('API_PORT', default=5000))
