@@ -4,7 +4,7 @@ from flask import request, Blueprint
 from marshmallow import ValidationError
 from playhouse.shortcuts import model_to_dict
 
-from schemas import project_schema
+from schemas import project_input_schema, project_output_schema
 from database_models import ProjectTable, ProjectOwnerTable
 
 from utility.auth_util import has_project_access
@@ -22,12 +22,14 @@ def create_project(jwt_data):
 
     input = request.get_json()
     try:
-        data = project_schema.load(input)
+        data = project_input_schema.load(input)
     except ValidationError as err:
         return {'errors': err.messages}, 422
 
     try:
-        project = ProjectTable.create(name=data['name'], description=data['description'])
+        project = ProjectTable.create(
+            **data
+        )
         ProjectOwnerTable.create(user_id=user_id, project_id=project.project_id)
     except Exception as err:
         return err, 500
@@ -44,7 +46,10 @@ def get_project(jwt_data, project_id):
     project = ProjectTable.get(ProjectTable.project_id == project_id)
 
     if request.method == 'GET':
-        return project_schema.dump(model_to_dict(project)), 200
+        deliverables = get_deliverable_list(project.project_id)
+        project_dict = model_to_dict(project)
+        project_dict['deliverables'] = deliverables
+        return project_output_schema.dump(project_dict), 200
 
     elif request.method == 'DELETE':
         project.delete_instance(recursive=True)
@@ -71,10 +76,7 @@ def list_projects(jwt_data):
         )
 
         for project in project_query:
-            deliverables = get_deliverable_list(project.project_id)
-            project_dict = model_to_dict(project)
-            project_dict['deliverables'] = deliverables
-            projects.append(project_schema.dump(project_dict))
+            projects.append(project_output_schema.dump(model_to_dict(project)))
 
 
-    return projects, 200
+    return {'projects': projects}, 200

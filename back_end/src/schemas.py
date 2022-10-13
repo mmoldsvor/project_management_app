@@ -46,7 +46,14 @@ class ProjectSchema(Schema):
     deliverables = fields.List(fields.Nested(DeliverableSchema))
 
 
-project_schema = ProjectSchema()
-deliverable_schema = DeliverableSchema()
-subdeliverable_schema = SubdeliverableSchema()
-work_package_schema = WorkPackageSchema()
+project_output_schema = ProjectSchema()
+project_input_schema = ProjectSchema(exclude=['project_id', 'deliverables'])
+
+deliverable_output_schema = DeliverableSchema()
+deliverable_input_schema = DeliverableSchema(exclude=['id', 'subdeliverables'])
+
+subdeliverable_output_schema = SubdeliverableSchema()
+subdeliverable_input_schema = SubdeliverableSchema(exclude=['id', 'work_packages'])
+
+work_package_output_schema = WorkPackageSchema()
+work_package_input_schema = WorkPackageSchema(exclude=['id'])
