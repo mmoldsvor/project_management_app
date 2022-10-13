@@ -7,6 +7,7 @@ from marshmallow import ValidationError
 from database_models import database
 from schemas import test_schema
 from work_package import resource_loading_schema, traverse_package_graph
+from render import work_package_graph
 from graph import Graph
 
 from auth import auth_required
@@ -71,6 +72,25 @@ def time_schedule():
 
     traverse_package_graph(graph)
     
-    return resource_loading_schema.dump(data) 
+    return resource_loading_schema.dump(data)
+
+@app.route('/graph_test', methods=['POST'])
+def graph_test():
+    input = request.get_json()
+    try:
+        data = resource_loading_schema.load(input)
+    except ValidationError as err:
+        return {'errors': err.messages}, 422
+
+    graph = Graph()
+    for relation in data['relations']:
+        target = data['work_packages'][relation['target']]
+        source = data['work_packages'][relation['source']]
+        graph.add_edge(source, target, (relation['relation'], relation['duration']))
+
+    traverse_package_graph(graph)
+    x,y = work_package_graph(graph)
+    
+    return '\n'.join([str(x),str(y)])
 
 app.run(host='0.0.0.0')
