@@ -25,20 +25,8 @@ services:
     env_file:
       - ./environment/postgres.env
       - ./environment/postgres_secret.env
-
-  pgadmin:
-    image: dpage/pgadmin4:6.13
-    environment:
-      PGADMIN_DEFAULT_EMAIL: pgadmin@email.com
-      PGADMIN_DEFAULT_PASSWORD: pgadmin
-    volumes:
-      - pgadmin-data:/var/lib/pgadmin
-    env_file:
-      - ./environment/pgadmin.env
-      - ./environment/pgadmin_secret.env
     ports:
-      - "80:80"
+      - "6543:5432"
 
 volumes:
   postgres-data:
-  pgadmin-data:

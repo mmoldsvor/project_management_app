@@ -1,9 +1,34 @@
-import hashlib, uuid
 import jwt
-import random
-#from database_models import database
+import hashlib, uuid
+
+from flask import request
+from marshmallow import Schema, fields
+from functools import wraps
 from datetime import datetime, timezone, timedelta
-from marshmallow import Schema, fields, validate, ValidationError
+
+
+from configuration import config
+
+
+token_secret = config['JWT']['secret']
+token_algorithm = config['JWT']['algorithm']
+
+
+def auth_required(func):
+    @wraps(func)
+    def decorator(*args, **kwargs):
+        if 'Authorization' in request.headers:
+            _, token = request.headers['Authorization'].split()
+
+            try:
+                jwt_data = jwt.decode(token, token_secret, algorithms=[token_algorithm])
+            except Exception as e:
+                return str(e), 401
+        else:
+            return 'Missing a valid token', 401
+
+        return func(jwt_data, *args, **kwargs)
+    return decorator
 
 
 class UserAuthenticationSchema(Schema):
@@ -24,6 +49,7 @@ def encrypt_password(password, salt=''):
     hash = hashlib.sha256(salted_password.encode()).hexdigest()
     return hash
 
+
 def generate_jwt(email, uuid, token_duration, secret, algorithm):
     current_timestamp = datetime.now(tz=timezone.utc)
     expiration_timestamp = current_timestamp + timedelta(seconds=token_duration)
@@ -37,8 +63,3 @@ def generate_jwt(email, uuid, token_duration, secret, algorithm):
 
     token = jwt.encode(payload, secret, algorithm=algorithm)
     return str(token)
-
-
-if __name__ == '__main__':
-    salt = generate_salt()
-    print(create_hash('abcdefghijklm', salt))
