@@ -1,37 +1,28 @@
 from flask import request, Blueprint
 from marshmallow import ValidationError
-from peewee import DoesNotExist
 from playhouse.shortcuts import model_to_dict
 
 from auth import auth_required
-from database_models import DeliverableTable, SubdeliverableTable
-from schemas import deliverable_schema, subdeliverable_schema
-from routes.project_api import has_project_access
+from database_models import DeliverableTable, SubdeliverableTable, WorkPackageTable
+from schemas import deliverable_schema, subdeliverable_schema, work_package_schema
+from utility.auth_util import has_project_access, deliverable_exists, subdeliverable_exists
 
 
 deliverable_api = Blueprint('deliverable_api', __name__)
 
 
-def deliverable_exists(project_id, deliverable_id):
-    try:
-        DeliverableTable.get(
-            (DeliverableTable.project_id == project_id) &
-            (DeliverableTable.id == deliverable_id)
-        )
-    except DoesNotExist:
-        return False
-    return True
+def get_work_package_list(subdeliverable_id):
+    work_package_query = WorkPackageTable.select(
+        WorkPackageTable
+    ).where(
+        WorkPackageTable.subdeliverable == subdeliverable_id
+    )
 
+    work_packages = []
+    for work_package in work_package_query:    
+        work_packages.append(work_package_schema.dump(work_package))
 
-def subdeliverable_exists(project_id, deliverable_id, subdeliverable_id):
-    try:
-        SubdeliverableTable.get(
-            (SubdeliverableTable.deliverable == deliverable_id) &
-            (SubdeliverableTable.id == subdeliverable_id)
-        )
-    except DoesNotExist:
-        return False
-    return deliverable_exists(project_id, deliverable_id)
+    return work_packages
 
 
 def get_subdeliverable_list(deliverable_id):
@@ -43,8 +34,10 @@ def get_subdeliverable_list(deliverable_id):
 
     subdeliverables = []
     for subdeliverable in subdeliverable_query:    
-        # Add list of work packages
-        subdeliverables.append(subdeliverable_schema.dump(subdeliverable))
+        work_packages = get_work_package_list(subdeliverable.id)
+        subdeliverable_dict = model_to_dict(subdeliverable)
+        subdeliverable_dict['work_packages'] = work_packages
+        subdeliverables.append(subdeliverable_schema.dump(subdeliverable_dict))
 
     return subdeliverables
 
@@ -126,14 +119,14 @@ def create_subdeliverable(jwt_data, project_id, deliverable_id):
     if not has_project_access(jwt_data['uuid'], project_id):
         return 'You do not have access to this project', 401
 
+    if not deliverable_exists(project_id, deliverable_id):
+        return 'Deliverable does not exist', 404
+
     input = request.get_json()
     try:
         data = subdeliverable_schema.load(input)
     except ValidationError as err:
         return {'errors': err.messages}, 422
-
-    if not deliverable_exists(project_id, deliverable_id):
-        return 'Deliverable does not exist', 404
     
     subdeliverable = SubdeliverableTable.create(
         name=data['name'], 
@@ -153,7 +146,7 @@ def list_subdeliverables(jwt_data, project_id, deliverable_id):
     if not deliverable_exists(project_id, deliverable_id):
         return 'Deliverable does not exist', 404
 
-    subdeliverables = list_subdeliverables(deliverable_id)
+    subdeliverables = get_subdeliverable_list(deliverable_id)
     
     return subdeliverables, 200
 
@@ -173,8 +166,10 @@ def get_or_delete_subdeliverable(jwt_data, project_id, deliverable_id, subdelive
     )
 
     if request.method == 'GET':
-        # Add list of work packages
-        return subdeliverable_schema.dump(model_to_dict(subdeliverable)), 200
+        work_packages = get_work_package_list(subdeliverable.id)
+        subdeliverable_dict = model_to_dict(work_packages)
+        subdeliverable_dict['work_packages'] = work_packages
+        return subdeliverable_schema.dump(model_to_dict(subdeliverable_dict)), 200
     
     elif request.method == 'DELETE':
         return 'Not yet implemented', 403
@@ -187,7 +182,24 @@ def create_work_package(jwt_data, project_id, deliverable_id, subdeliverable_id)
         return 'You do not have access to this project', 401
     
     if not subdeliverable_exists(project_id, deliverable_id, subdeliverable_id):
-        return 'Subdeliverable does not exist', 400 # Check return code
+        return 'Subdeliverable does not exist', 404
+
+    input = request.get_json()
+    try:
+        data = work_package_schema.load(input)
+    except ValidationError as err:
+        return {'errors': err.messages}, 422
+
+    
+    work_package = WorkPackageTable.create(
+        name=data['name'],
+        description=data['description'],
+        resources=data['resources'],
+        duration=data['duration'],
+        subdeliverable=subdeliverable_id
+    )
+
+    return str(work_package.id), 200
 
 
 @deliverable_api.route('/project/<project_id>/deliverable/<deliverable_id>/subdeliverable/<subdeliverable_id>/work_packages/list', methods=['GET'])
@@ -197,7 +209,11 @@ def list_work_packages(jwt_data, project_id, deliverable_id, subdeliverable_id):
         return 'You do not have access to this project', 401
 
     if not subdeliverable_exists(project_id, deliverable_id, subdeliverable_id):
-        return 'Subdeliverable does not exist', 400 # Check return code
+        return 'Subdeliverable does not exist', 404
+
+    work_packages = get_work_package_list(subdeliverable_id)
+    
+    return work_packages, 200
 
 
 @deliverable_api.route('/project/<project_id>/deliverable/<deliverable_id>/subdeliverable/<subdeliverable_id>/work_package/<work_package_id>', methods=['GET', 'DELETE'])
@@ -207,4 +223,15 @@ def get_or_delete_work_package(jwt_data, project_id, deliverable_id, subdelivera
         return 'You do not have access to this project', 401
 
     if not subdeliverable_exists(project_id, deliverable_id, subdeliverable_id):
-        return 'Subdeliverable does not exist', 400 # Check return code
+        return 'Subdeliverable does not exist', 404
+
+    work_package = WorkPackageTable.get(
+        (WorkPackageTable.subdeliverable == subdeliverable_id) &
+        (WorkPackageTable.id == work_package_id)
+    )
+
+    if request.method == 'GET':
+        return work_package_schema.dump(model_to_dict(work_package)), 200
+    
+    elif request.method == 'DELETE':
+        return 'Not yet implemented', 403

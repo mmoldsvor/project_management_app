@@ -14,19 +14,20 @@ class TestSchema(Schema):
 test_schema = TestSchema()
 
 
-class ProjectSchema(Schema):
-    project_id = fields.UUID()
+class WorkPackageSchema(Schema):
+    id = fields.Int()
     name = fields.Str(required=True)
     description = fields.Str()
-
-
-project_schema = ProjectSchema()
+    resources = fields.Int()
+    duration = fields.Int()
 
 
 class SubdeliverableSchema(Schema):
     id = fields.Int()
     name = fields.Str(required=True)
     description = fields.Str()
+
+    work_packages = fields.List(fields.Nested(WorkPackageSchema))
 
 
 class DeliverableSchema(Schema):
@@ -37,5 +38,15 @@ class DeliverableSchema(Schema):
     subdeliverables = fields.List(fields.Nested(SubdeliverableSchema))
 
 
-subdeliverable_schema = SubdeliverableSchema()
+class ProjectSchema(Schema):
+    project_id = fields.UUID()
+    name = fields.Str(required=True)
+    description = fields.Str()
+
+    deliverables = fields.List(fields.Nested(DeliverableSchema))
+
+
+project_schema = ProjectSchema()
 deliverable_schema = DeliverableSchema()
+subdeliverable_schema = SubdeliverableSchema()
+work_package_schema = WorkPackageSchema()
