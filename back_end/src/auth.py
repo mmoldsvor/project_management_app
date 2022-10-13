@@ -32,12 +32,13 @@ def auth_required(func):
 
 
 class UserAuthenticationSchema(Schema):
-    name = fields.Str()
+    name = fields.Str(required=True)
     email = fields.Email(required=True)
     password = fields.Str(required=True)
 
 
-user_authentication_schema = UserAuthenticationSchema()
+account_creation_schema = UserAuthenticationSchema()
+authentication_schema = UserAuthenticationSchema(exclude=['name'])
 
 
 def generate_salt():

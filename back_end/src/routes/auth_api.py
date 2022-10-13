@@ -2,7 +2,7 @@ from flask import request, Blueprint
 from marshmallow import ValidationError
 from peewee import IntegrityError, DoesNotExist
 
-from auth import user_authentication_schema, generate_salt, encrypt_password, generate_jwt
+from auth import account_creation_schema, authentication_schema, generate_salt, encrypt_password, generate_jwt
 from database_models import UserTable
 from configuration import config
 
@@ -15,11 +15,11 @@ token_duration = int(config['JWT']['duration'])
 token_algorithm = config['JWT']['algorithm']
 
 
-@auth_api.route('/create_user', methods=['POST'])
-def create_user():
+@auth_api.route('/create_account', methods=['POST'])
+def create_account():
     input = request.get_json()
     try:
-        data = user_authentication_schema.load(input)
+        data = account_creation_schema.load(input)
     except ValidationError as err:
         return {'errors': err.messages}, 422
     
@@ -27,7 +27,7 @@ def create_user():
     hash = encrypt_password(data['password'], salt)
 
     try:
-        uuid = UserTable.insert(email=data['email'], name=data['name'], salt=salt, hash=hash).execute()
+        UserTable.insert(email=data['email'], name=data['name'], salt=salt, hash=hash).execute()
     except IntegrityError as err:
         return 'Email already in use', 400
 
@@ -38,7 +38,7 @@ def create_user():
 def authenticate():
     input = request.get_json()
     try:
-        data = user_authentication_schema.load(input)
+        data = authentication_schema.load(input)
     except ValidationError as err:
         return {'errors': err.messages}, 422
 

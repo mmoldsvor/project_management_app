@@ -27,9 +27,7 @@ def create_project(jwt_data):
         return {'errors': err.messages}, 422
 
     try:
-        project = ProjectTable.create(
-            **data
-        )
+        project = ProjectTable.create(**data)
         ProjectOwnerTable.create(user_id=user_id, project_id=project.project_id)
     except Exception as err:
         return err, 500
