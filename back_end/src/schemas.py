@@ -19,4 +19,23 @@ class ProjectSchema(Schema):
     name = fields.Str(required=True)
     description = fields.Str()
 
+
 project_schema = ProjectSchema()
+
+
+class SubdeliverableSchema(Schema):
+    id = fields.Int()
+    name = fields.Str(required=True)
+    description = fields.Str()
+
+
+class DeliverableSchema(Schema):
+    id = fields.Int()
+    name = fields.Str(required=True)
+    description = fields.Str()
+
+    subdeliverables = fields.List(fields.Nested(SubdeliverableSchema))
+
+
+subdeliverable_schema = SubdeliverableSchema()
+deliverable_schema = DeliverableSchema()
