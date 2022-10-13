@@ -12,7 +12,7 @@ from database_models import ProjectTable, ProjectOwnerTable
 project_api = Blueprint('project_api', __name__)
 
 
-@project_api.route('/project/create_project', methods=['POST'])
+@project_api.route('/project', methods=['POST'])
 @auth_required
 def create_project(jwt_data):
     user_id = jwt_data['uuid']

@@ -12,11 +12,13 @@ from auth import auth_required
 
 
 from routes.auth_api import auth_api
+from routes.project_api import project_api
 
 
 app = Flask(__name__)
 
 app.register_blueprint(auth_api)
+app.register_blueprint(project_api)
 
 @app.before_request
 def before_request():
