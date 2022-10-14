@@ -17,9 +17,8 @@ token_algorithm = config['JWT']['algorithm']
 
 @auth_api.route('/create_account', methods=['POST'])
 def create_account():
-    input = request.get_json()
     try:
-        data = account_creation_schema.load(input)
+        data = account_creation_schema.load(request.get_json())
     except ValidationError as err:
         return {'errors': err.messages}, 422
     
@@ -36,9 +35,8 @@ def create_account():
 
 @auth_api.route('/authenticate', methods=['POST'])
 def authenticate():
-    input = request.get_json()
     try:
-        data = authentication_schema.load(input)
+        data = authentication_schema.load(request.get_json())
     except ValidationError as err:
         return {'errors': err.messages}, 422
 

@@ -42,9 +42,8 @@ def index(jwt_data):
 
 @app.route('/data_test', methods=['POST'])
 def data_test():
-    input = request.get_json()
     try:
-        data = test_schema.load(input)
+        data = test_schema.load(request.get_json())
     except ValidationError as err:
         return {'errors': err.messages}, 422
 
@@ -55,9 +54,8 @@ def data_test():
 
 @app.route('/time_schedule', methods=['POST'])
 def time_schedule():
-    input = request.get_json()
     try:
-        data = resource_loading_schema.load(input)
+        data = resource_loading_schema.load(request.get_json())
     except ValidationError as err:
         return {'errors': err.messages}, 422
 
