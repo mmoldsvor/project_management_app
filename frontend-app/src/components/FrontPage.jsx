@@ -1,9 +1,11 @@
 import {Title} from "@mui/icons-material";
 import {Button, Typography} from "@mui/material";
 import {Link, useNavigate} from "react-router-dom";
+import OurClient from "../client/client";
 
 export default function FrontPage(){
     const navigate = useNavigate()
+    const token = "......"
     return(
         <div>
             <Title>
@@ -14,10 +16,10 @@ export default function FrontPage(){
             </Typography>
             <Button
                 variant={"contained"}
-                onClick={() => {navigate("example", {state: {prevPage : window.location.pathname}})}}
-            >
-                Start planning
-            </Button>
+                onClick={() => {OurClient("").pingBackend(token).then(console.log)}}
+                label={"Ping server"}
+            />
+
         </div>
     )
 }

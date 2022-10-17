@@ -5,6 +5,7 @@ import ExampleApplication from "../components/ExampleComponent";
 import Header from "../components/Header";
 import ProjectSuccess from "../components/ProjectSuccess";
 import ProjectDeliverables from "../components/ProjectDeliverables";
+import ProjectWorkpackages from "../components/ProjectWorkpackages";
 
 export const AppRoutes = (
     <Routes>
@@ -13,5 +14,6 @@ export const AppRoutes = (
         <Route key="header" path="/header" element={<Header />} />
         <Route key="success" path="/success" element={<ProjectSuccess />} />
         <Route key="deliverables" path="/deliverables" element={<ProjectDeliverables />} />
+        <Route key="work-packages" path="/work-packages" element={<ProjectWorkpackages/>} />
     </Routes>
 );

@@ -1,5 +1,5 @@
 import '../App.css';
-import {Box, TextField, Typography} from "@mui/material";
+import {Box, FormControlLabel, Radio, RadioGroup, TextField, Typography} from "@mui/material";
 import {ArrowBack, ArrowForward} from "@mui/icons-material";
 import {DataGrid, GridColDef} from '@mui/x-data-grid';
 import {useLocation, useNavigate} from "react-router-dom";
@@ -15,13 +15,16 @@ export default function ProjectDeliverables() {
     const {state} = useLocation()
     const navigate = useNavigate()
     const [userState, setUserState] = useState({
-        "projectGoal": undefined,
-        "index": 0
+        "index": 0,
+        "layers": "2"
     })
+    const changeHandler = (e) => {
+        setUserState(prevState => {return {...prevState, [e.target.name]: e.target.value}})
+    }
+
     const [projectGoal, setProjectGoal] = useState()
     const [deliverables, setDeliverables] = useState({})
     const [subDeliverables, setSubDeliverables] = useState({})
-    const [workpackages, setWorkpackages] = useState({})
 
     const [workingOn, setWorkingOn] = useState("deliverables")
     const [deliverableRows, setDeliverableRows] = useState([])
@@ -37,10 +40,19 @@ export default function ProjectDeliverables() {
         { field: 'description', headerName: 'Description', width: 220 },
     ];
     const [subDeliverableRows, setSubDeliverableRows] = useState([])
+    const navigateToWorkPackages = () => {
+        return (
+            navigate("/work-packages", {state: {
+                    "deliverables": deliverables,
+                    "subDeliverables" : subDeliverables,
+                    "projectGoal": projectGoal
+                }})
+        )
+    }
     return (
         <div className="deliverables__grid">
             <div className={"deliverables__grid_left"}>
-                {projectGoal === undefined && <ProjectGoal onContinue={setProjectGoal}/>}
+                {projectGoal === undefined && <ProjectGoal onContinue={setProjectGoal} changeHandler={changeHandler}/>}
                 {projectGoal !== undefined && <div>
                     <Typography className={"general__inner_element"} variant={"h4"}>{projectGoal}</Typography>
                     {workingOn === "deliverables" && <Deliverables
@@ -49,12 +61,14 @@ export default function ProjectDeliverables() {
                         setDeliverables={setDeliverables}
                     />}
 
-                    {workingOn === "subDeliverables" && <SubDeliverables
+                    {workingOn === "subDeliverables" && userState.layers === "2" && <SubDeliverables
                         deliverableRows={deliverableRows}
                         setWorkingOn={setWorkingOn}
                         setSubDeliverableRows={setSubDeliverableRows}
                         setSubDeliverables={setSubDeliverables}
+                        navigateToWorkPackages={navigateToWorkPackages}
                     />}
+                    {workingOn === "subDeliverables" && userState.layers === "1" && navigateToWorkPackages()}
                 </div>}
             </div>
 
@@ -66,13 +80,15 @@ export default function ProjectDeliverables() {
                         columns={deliverableColumns}
                     />
                 </div>
-                <Typography className={"general__inner_element"} variant={"h5"}>Sub-deliverables</Typography>
-                <div className={"deliverables__tables"}>
-                    <DataGrid
-                        rows={subDeliverableRows}
-                        columns={subDeliverablesColumns}
-                    />
-                </div>
+                {userState.layers === "2" && <div>
+                    <Typography className={"general__inner_element"} variant={"h5"}>Sub-deliverables</Typography>
+                    <div className={"deliverables__tables"}>
+                        <DataGrid
+                            rows={subDeliverableRows}
+                            columns={subDeliverablesColumns}
+                        />
+                    </div>
+                </div>}
             </div>
         </div>
     );
@@ -90,6 +106,18 @@ function ProjectGoal(props){
                 onChange={(e) => setTempGoal(e.target.value)}
                 label="Project goal"
             />
+            <Typography className={"general__inner_element"} variant={"body1"}>
+                How many layers of deliverables do you want to divide your project into?
+            </Typography>
+            <RadioGroup
+                onChange={props.changeHandler}
+                aria-labelledby="demo-radio-buttons-group-label"
+                defaultValue="2"
+                name="layers"
+            >
+                <FormControlLabel value="2" control={<Radio />} label="Deliverables and Sub-deliverables" />
+                <FormControlLabel value="1" control={<Radio />} label="Only deliverables" />
+            </RadioGroup>
             <Button
                 onClick={() => props.onContinue(tempGoal)}
                 label={"Continue"}
@@ -140,9 +168,8 @@ function Deliverables(props){
                 value={state.deliverable_desc}
                 onChange={changeHandler}
             />
-
-            <Button color="lightblue" label = "Add deliverable" onClick={() => addDeliverables()}/>
-            <Button label={"Continue"} onClick={() => props.setWorkingOn("subDeliverables")}/>
+            <Button className={"general__button__main"} label = "Add deliverable" onClick={() => addDeliverables()}/>
+            <Button className={"general__button__secondary"} label={"Continue"} onClick={() => props.setWorkingOn("subDeliverables")}/>
         </div>
     )
 }
@@ -182,9 +209,12 @@ function SubDeliverables(props){
     return(
         <div>
             <Typography>
-            Break up your deliverables into sub-deliverables
+                Break up your deliverables into sub-deliverables
             </Typography>
-            <ArrowBack onClick={() => increment_index(- 1)}/>{props.deliverableRows.at(index)?.name}<ArrowForward onClick={() => increment_index(1)}/>
+            <br/>
+            <Typography variant={"h6"}>
+                {props.deliverableRows.at(index)?.name}
+            </Typography>
             <TextInput
                 className={"general__text_input"}
                 label="Sub-deliverable name - f.ex: Implement authentication"
@@ -201,7 +231,19 @@ function SubDeliverables(props){
             />
 
             <Button color="lightblue" label = "Add sub-deliverable" onClick={() => addSubDeliverables()}/>
-            <Button label={"back"} onClick={() => props.setWorkingOn("deliverables")}/>
+            {index < props.deliverableRows.length - 1 && <Button
+                label={"Next deliverable"}
+                onClick={() => setIndex(prevState => {return prevState + 1})}
+            />}
+            {index > 0 && <Button
+                label={"Previous deliverable"}
+                onClick={() => setIndex(prevState => {return prevState - 1})}
+            />}
+            {index === props.deliverableRows.length - 1 && <Button
+                label={"Continue to workpackages"}
+                onClick={() => props.navigateToWorkPackages()}
+            />}
+            {index === 0 && <Button label={"Back to deliverables"} onClick={() => props.setWorkingOn("deliverables")}/>}
         </div>
     )
 }

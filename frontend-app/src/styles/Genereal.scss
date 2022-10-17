@@ -28,6 +28,24 @@ $BORDER-RADIUS : 3px;
   cursor: pointer;
   margin-right: 15px;
   border-radius: $BORDER-RADIUS;
+  grid-column: 1;
+  float: left;
+}
+.general__button__main{
+  @extend .general__button;
+  background-color: lightskyblue;
+}
+
+.general__button__secondary{
+  @extend .general__button;
+  background-color: white;
+}
+.general__button__third{
+  @extend .general__button;
+  background-color: white;
+}
+
+.general__button__grid{
 }
 
 .general__text_input{
