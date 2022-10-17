@@ -12,3 +12,11 @@ class TestSchema(Schema):
         return data
 
 test_schema = TestSchema()
+
+
+class ProjectSchema(Schema):
+    project_id = fields.UUID()
+    name = fields.Str(required=True)
+    description = fields.Str()
+
+project_schema = ProjectSchema()
