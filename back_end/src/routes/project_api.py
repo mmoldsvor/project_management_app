@@ -1,6 +1,7 @@
 from auth import auth_required
 
 from flask import request, Blueprint
+from peewee import DoesNotExist
 from marshmallow import ValidationError
 from playhouse.shortcuts import model_to_dict
 
@@ -45,7 +46,11 @@ def get_project(jwt_data, project_id):
         ProjectTable.update(**data).where(project_condition).execute()
         return 'Project was updated', 200
 
-    project = ProjectTable.get(project_condition)
+    try:
+        project = ProjectTable.get(project_condition)
+    except DoesNotExist:
+        return 'Project was not found', 404
+
     if request.method == 'DELETE':
         project.delete_instance(recursive=True)
         return 'Project was deleted', 200

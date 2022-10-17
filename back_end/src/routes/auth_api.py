@@ -4,15 +4,9 @@ from peewee import IntegrityError, DoesNotExist
 
 from auth import account_creation_schema, authentication_schema, generate_salt, encrypt_password, generate_jwt
 from database_models import UserTable
-from configuration import config
 
 
 auth_api = Blueprint('auth_api', __name__)
-
-
-token_secret = config['JWT']['secret']
-token_duration = int(config['JWT']['duration'])
-token_algorithm = config['JWT']['algorithm']
 
 
 @auth_api.route('/create_account', methods=['POST'])
@@ -51,6 +45,6 @@ def authenticate():
     if (hash != user.hash):
         return incorrect_login_message, 400 
 
-    token = generate_jwt(data['email'], str(user.user_id), token_duration, token_secret, token_algorithm)
+    token = generate_jwt(data['email'], str(user.user_id))
     
     return token, 200

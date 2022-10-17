@@ -6,11 +6,11 @@ from marshmallow import Schema, fields
 from functools import wraps
 from datetime import datetime, timezone, timedelta
 
-
 from configuration import config
 
 
 token_secret = config['JWT']['secret']
+token_duration = int(config['JWT']['duration'])
 token_algorithm = config['JWT']['algorithm']
 
 
@@ -51,7 +51,7 @@ def encrypt_password(password, salt=''):
     return hash
 
 
-def generate_jwt(email, uuid, token_duration, secret, algorithm):
+def generate_jwt(email, uuid):
     current_timestamp = datetime.now(tz=timezone.utc)
     expiration_timestamp = current_timestamp + timedelta(seconds=token_duration)
     payload = {
@@ -62,5 +62,5 @@ def generate_jwt(email, uuid, token_duration, secret, algorithm):
         'iat': int(current_timestamp.timestamp()),
     }
 
-    token = jwt.encode(payload, secret, algorithm=algorithm)
+    token = jwt.encode(payload, token_secret, algorithm=token_algorithm)
     return str(token)

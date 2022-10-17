@@ -1,5 +1,6 @@
 from flask import request, Blueprint
 from marshmallow import ValidationError
+from peewee import DoesNotExist
 from playhouse.shortcuts import model_to_dict
 
 from auth import auth_required
@@ -62,7 +63,11 @@ def get_or_delete_deliverable(jwt_data, project_id, deliverable_id):
         DeliverableTable.update(**data).where(deliverable_condition).execute()
         return 'Deliverable was updated', 200
 
-    deliverable = DeliverableTable.get(deliverable_condition)
+    try:
+        deliverable = DeliverableTable.get(deliverable_condition)
+    except DoesNotExist:
+        return 'Deliverable not found'
+
     if request.method == 'DELETE':
         deliverable.delete_instance(recursive=True)
         return 'Deliverable was deleted', 200
@@ -80,7 +85,7 @@ def create_subdeliverable(jwt_data, project_id, deliverable_id):
         return 'You do not have access to this project', 401
 
     if not deliverable_exists(project_id, deliverable_id):
-        return 'Deliverable does not exist', 404
+        return 'Deliverable not found', 404
 
     try:
         data = subdeliverable_input_schema.load(request.get_json())
@@ -102,7 +107,7 @@ def list_subdeliverables(jwt_data, project_id, deliverable_id):
         return 'You do not have access to this project', 401
 
     if not deliverable_exists(project_id, deliverable_id):
-        return 'Deliverable does not exist', 404
+        return 'Deliverable not found', 404
 
     subdeliverables = get_subdeliverable_list(deliverable_id)
     
@@ -116,7 +121,7 @@ def get_or_delete_subdeliverable(jwt_data, project_id, deliverable_id, subdelive
         return 'You do not have access to this project', 401
 
     if not deliverable_exists(project_id, deliverable_id):
-        return 'Deliverable does not exist', 404
+        return 'Deliverable not found', 404
     
     subdeliverable_condition = (
         (SubdeliverableTable.deliverable == deliverable_id) &
@@ -132,7 +137,11 @@ def get_or_delete_subdeliverable(jwt_data, project_id, deliverable_id, subdelive
         SubdeliverableTable.update(**data).where(subdeliverable_condition).execute()
         return 'Subdeliverable was updated', 200
 
-    subdeliverable = SubdeliverableTable.get(subdeliverable_condition)
+    try:
+        subdeliverable = SubdeliverableTable.get(subdeliverable_condition)
+    except DoesNotExist:
+        return 'Subdeliverable not found', 404
+    
     if request.method == 'DELETE':
         subdeliverable.delete_instance(recursive=True)
         return 'Subdeliverable was deleted', 200
@@ -151,7 +160,7 @@ def create_work_package(jwt_data, project_id, deliverable_id, subdeliverable_id)
         return 'You do not have access to this project', 401
     
     if not subdeliverable_exists(project_id, deliverable_id, subdeliverable_id):
-        return 'Subdeliverable does not exist', 404
+        return 'Subdeliverable not found', 404
 
     try:
         data = work_package_input_schema.load(request.get_json())
@@ -174,7 +183,7 @@ def list_work_packages(jwt_data, project_id, deliverable_id, subdeliverable_id):
         return 'You do not have access to this project', 401
 
     if not subdeliverable_exists(project_id, deliverable_id, subdeliverable_id):
-        return 'Subdeliverable does not exist', 404
+        return 'Subdeliverable not found', 404
 
     work_packages = get_work_package_list(subdeliverable_id)
     
@@ -188,7 +197,7 @@ def work_package(jwt_data, project_id, deliverable_id, subdeliverable_id, work_p
         return 'You do not have access to this project', 401
 
     if not subdeliverable_exists(project_id, deliverable_id, subdeliverable_id):
-        return 'Subdeliverable does not exist', 404
+        return 'Subdeliverable not found', 404
 
     work_package_condition = (
         (WorkPackageTable.subdeliverable == subdeliverable_id) & 
@@ -204,7 +213,11 @@ def work_package(jwt_data, project_id, deliverable_id, subdeliverable_id, work_p
         WorkPackageTable.update(**data).where(work_package_condition).execute()
         return 'Work package was updated', 200
 
-    work_package = WorkPackageTable.get(work_package_condition)
+    try:
+        work_package = WorkPackageTable.get(work_package_condition)
+    except DoesNotExist:
+        return 'Work package not found', 404
+
     if request.method == 'DELETE':
         work_package.delete_instance()
         return 'Work package was deleted', 200
