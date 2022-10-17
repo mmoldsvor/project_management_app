@@ -17,7 +17,7 @@ deliverable_api = Blueprint('deliverable_api', __name__)
 @auth_required
 def create_deliverable(jwt_data, project_id):
     if not has_project_access(jwt_data['uuid'], project_id):
-        return 'You do not have access to this project', 401
+        return {'errors': 'You do not have access to this project'}, 401
 
     try:
         data = deliverable_input_schema.load(request.get_json())
@@ -29,14 +29,14 @@ def create_deliverable(jwt_data, project_id):
         project_id=project_id
     )
     
-    return str(deliverable.id), 200 
+    return {'id': str(deliverable.id)}, 200 
 
 
-@deliverable_api.route('/project/<project_id>/deliverables/list', methods=['GET'])
+@deliverable_api.route('/project/<project_id>/deliverables', methods=['GET'])
 @auth_required
 def list_deliverables(jwt_data, project_id):
     if not has_project_access(jwt_data['uuid'], project_id):
-        return 'You do not have access to this project', 401
+        return {'errors': 'You do not have access to this project'}, 401
 
     deliverables = get_deliverable_list(project_id)
     
@@ -47,7 +47,7 @@ def list_deliverables(jwt_data, project_id):
 @auth_required
 def get_or_delete_deliverable(jwt_data, project_id, deliverable_id):
     if not has_project_access(jwt_data['uuid'], project_id):
-        return 'You do not have access to this project', 401
+        return {'errors': 'You do not have access to this project'}, 401
 
     deliverable_condition = (
         (DeliverableTable.project == project_id) &
@@ -61,31 +61,31 @@ def get_or_delete_deliverable(jwt_data, project_id, deliverable_id):
             return {'errors': err.messages}, 422
         
         DeliverableTable.update(**data).where(deliverable_condition).execute()
-        return 'Deliverable was updated', 200
+        return {'message': 'Deliverable was updated'}, 200
 
     try:
         deliverable = DeliverableTable.get(deliverable_condition)
     except DoesNotExist:
-        return 'Deliverable not found'
+        return {'errors': 'Deliverable not found'}, 404
 
     if request.method == 'DELETE':
         deliverable.delete_instance(recursive=True)
-        return 'Deliverable was deleted', 200
+        return {'message': 'Deliverable was deleted'}, 200
 
     subdeliverables = get_subdeliverable_list(deliverable.id)
     deliverable_dict = model_to_dict(deliverable)
     deliverable_dict['subdeliverables'] = subdeliverables
-    return deliverable_output_schema.dump(deliverable_dict), 200
+    return {'deliverable': deliverable_output_schema.dump(deliverable_dict)}, 200
 
 
 @deliverable_api.route('/project/<project_id>/deliverable/<deliverable_id>/subdeliverable', methods=['POST'])
 @auth_required
 def create_subdeliverable(jwt_data, project_id, deliverable_id):
     if not has_project_access(jwt_data['uuid'], project_id):
-        return 'You do not have access to this project', 401
+        return {'errors': 'You do not have access to this project'}, 401
 
     if not deliverable_exists(project_id, deliverable_id):
-        return 'Deliverable not found', 404
+        return {'errors': 'Deliverable not found'}, 404
 
     try:
         data = subdeliverable_input_schema.load(request.get_json())
@@ -97,17 +97,17 @@ def create_subdeliverable(jwt_data, project_id, deliverable_id):
         deliverable=deliverable_id
     )
 
-    return str(subdeliverable.id), 200
+    return {'id': str(subdeliverable.id)}, 200
 
 
-@deliverable_api.route('/project/<project_id>/deliverable/<deliverable_id>/subdeliverables/list', methods=['GET'])
+@deliverable_api.route('/project/<project_id>/deliverable/<deliverable_id>/subdeliverables', methods=['GET'])
 @auth_required
 def list_subdeliverables(jwt_data, project_id, deliverable_id):
     if not has_project_access(jwt_data['uuid'], project_id):
-        return 'You do not have access to this project', 401
+        return {'errors': 'You do not have access to this project'}, 401
 
     if not deliverable_exists(project_id, deliverable_id):
-        return 'Deliverable not found', 404
+        return {'errors': 'Deliverable not found'}, 404
 
     subdeliverables = get_subdeliverable_list(deliverable_id)
     
@@ -118,10 +118,10 @@ def list_subdeliverables(jwt_data, project_id, deliverable_id):
 @auth_required
 def get_or_delete_subdeliverable(jwt_data, project_id, deliverable_id, subdeliverable_id):
     if not has_project_access(jwt_data['uuid'], project_id):
-        return 'You do not have access to this project', 401
+        return {'errors': 'You do not have access to this project'}, 401
 
     if not deliverable_exists(project_id, deliverable_id):
-        return 'Deliverable not found', 404
+        return {'errors': 'Deliverable not found'}, 404
     
     subdeliverable_condition = (
         (SubdeliverableTable.deliverable == deliverable_id) &
@@ -135,21 +135,21 @@ def get_or_delete_subdeliverable(jwt_data, project_id, deliverable_id, subdelive
             return {'errors': err.messages}, 422
         
         SubdeliverableTable.update(**data).where(subdeliverable_condition).execute()
-        return 'Subdeliverable was updated', 200
+        return {'message': 'Subdeliverable was updated'}, 200
 
     try:
         subdeliverable = SubdeliverableTable.get(subdeliverable_condition)
     except DoesNotExist:
-        return 'Subdeliverable not found', 404
+        return {'errors': 'Subdeliverable not found'}, 404
     
     if request.method == 'DELETE':
         subdeliverable.delete_instance(recursive=True)
-        return 'Subdeliverable was deleted', 200
+        return {'message': 'Subdeliverable was deleted'}, 200
 
     work_packages = get_work_package_list(subdeliverable.id)
     subdeliverable_dict = model_to_dict(work_packages)
     subdeliverable_dict['work_packages'] = work_packages
-    return subdeliverable_output_schema.dump(model_to_dict(subdeliverable_dict)), 200
+    return {'subdeliverable': subdeliverable_output_schema.dump(model_to_dict(subdeliverable_dict))}, 200
     
     
 
@@ -157,10 +157,10 @@ def get_or_delete_subdeliverable(jwt_data, project_id, deliverable_id, subdelive
 @auth_required
 def create_work_package(jwt_data, project_id, deliverable_id, subdeliverable_id):
     if not has_project_access(jwt_data['uuid'], project_id):
-        return 'You do not have access to this project', 401
+        return {'errors': 'You do not have access to this project'}, 401
     
     if not subdeliverable_exists(project_id, deliverable_id, subdeliverable_id):
-        return 'Subdeliverable not found', 404
+        return {'errors': 'Subdeliverable not found'}, 404
 
     try:
         data = work_package_input_schema.load(request.get_json())
@@ -173,17 +173,17 @@ def create_work_package(jwt_data, project_id, deliverable_id, subdeliverable_id)
         subdeliverable=subdeliverable_id
     )
 
-    return str(work_package.id), 200
+    return {'id': str(work_package.id)}, 200
 
 
-@deliverable_api.route('/project/<project_id>/deliverable/<deliverable_id>/subdeliverable/<subdeliverable_id>/work_packages/list', methods=['GET'])
+@deliverable_api.route('/project/<project_id>/deliverable/<deliverable_id>/subdeliverable/<subdeliverable_id>/work_packages', methods=['GET'])
 @auth_required
 def list_work_packages(jwt_data, project_id, deliverable_id, subdeliverable_id):
     if not has_project_access(jwt_data['uuid'], project_id):
-        return 'You do not have access to this project', 401
+        return {'errors': 'You do not have access to this project'}, 401
 
     if not subdeliverable_exists(project_id, deliverable_id, subdeliverable_id):
-        return 'Subdeliverable not found', 404
+        return {'errors': 'Subdeliverable not found'}, 404
 
     work_packages = get_work_package_list(subdeliverable_id)
     
@@ -194,10 +194,10 @@ def list_work_packages(jwt_data, project_id, deliverable_id, subdeliverable_id):
 @auth_required
 def work_package(jwt_data, project_id, deliverable_id, subdeliverable_id, work_package_id):
     if not has_project_access(jwt_data['uuid'], project_id):
-        return 'You do not have access to this project', 401
+        return {'errors': 'You do not have access to this project'}, 401
 
     if not subdeliverable_exists(project_id, deliverable_id, subdeliverable_id):
-        return 'Subdeliverable not found', 404
+        return {'errors': 'Subdeliverable not found'}, 404
 
     work_package_condition = (
         (WorkPackageTable.subdeliverable == subdeliverable_id) & 
@@ -211,15 +211,15 @@ def work_package(jwt_data, project_id, deliverable_id, subdeliverable_id, work_p
             return {'errors': err.messages}, 422
         
         WorkPackageTable.update(**data).where(work_package_condition).execute()
-        return 'Work package was updated', 200
+        return {'message': 'Work package was updated'}, 200
 
     try:
         work_package = WorkPackageTable.get(work_package_condition)
     except DoesNotExist:
-        return 'Work package not found', 404
+        return {'errors': 'Work package not found'}, 404
 
     if request.method == 'DELETE':
         work_package.delete_instance()
-        return 'Work package was deleted', 200
+        return {'errors': 'Work package was deleted'}, 200
     
     return work_package_output_schema.dump(model_to_dict(work_package)), 200

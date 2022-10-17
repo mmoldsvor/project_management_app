@@ -22,9 +22,9 @@ def create_account():
     try:
         UserTable.insert(email=data['email'], name=data['name'], salt=salt, hash=hash).execute()
     except IntegrityError as err:
-        return 'Email already in use', 400
+        return {'error': 'Email already in use'}, 400
 
-    return 'User created', 200 
+    return {'message': 'User created'}, 200 
 
 
 @auth_api.route('/authenticate', methods=['POST'])
@@ -38,13 +38,13 @@ def authenticate():
     try:
         user = UserTable.get(UserTable.email == data['email'])
     except DoesNotExist as err:
-        return incorrect_login_message, 400
+        return {'errors': incorrect_login_message}, 400
 
     hash = encrypt_password(data['password'], user.salt)
 
     if (hash != user.hash):
-        return incorrect_login_message, 400 
+        return {'errors': incorrect_login_message}, 400 
 
     token = generate_jwt(data['email'], str(user.user_id))
     
-    return token, 200
+    return {'token': token}, 200

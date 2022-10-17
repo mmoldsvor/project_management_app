@@ -23,9 +23,9 @@ def auth_required(func):
             try:
                 jwt_data = jwt.decode(token, token_secret, algorithms=[token_algorithm])
             except Exception as e:
-                return str(e), 401
+                return {'errors': str(e)}, 401
         else:
-            return 'Missing a valid token', 401
+            return {'errors': 'Missing a valid token'}, 401
 
         return func(jwt_data, *args, **kwargs)
     return decorator
