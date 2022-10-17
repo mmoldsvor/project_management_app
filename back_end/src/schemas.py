@@ -14,9 +14,46 @@ class TestSchema(Schema):
 test_schema = TestSchema()
 
 
+class WorkPackageSchema(Schema):
+    id = fields.Int()
+    name = fields.Str(required=True)
+    description = fields.Str()
+    resources = fields.Int()
+    duration = fields.Int()
+
+
+class SubdeliverableSchema(Schema):
+    id = fields.Int()
+    name = fields.Str(required=True)
+    description = fields.Str()
+
+    work_packages = fields.List(fields.Nested(WorkPackageSchema))
+
+
+class DeliverableSchema(Schema):
+    id = fields.Int()
+    name = fields.Str(required=True)
+    description = fields.Str()
+
+    subdeliverables = fields.List(fields.Nested(SubdeliverableSchema))
+
+
 class ProjectSchema(Schema):
     project_id = fields.UUID()
     name = fields.Str(required=True)
     description = fields.Str()
 
-project_schema = ProjectSchema()
+    deliverables = fields.List(fields.Nested(DeliverableSchema))
+
+
+project_output_schema = ProjectSchema()
+project_input_schema = ProjectSchema(exclude=['project_id', 'deliverables'])
+
+deliverable_output_schema = DeliverableSchema()
+deliverable_input_schema = DeliverableSchema(exclude=['id', 'subdeliverables'])
+
+subdeliverable_output_schema = SubdeliverableSchema()
+subdeliverable_input_schema = SubdeliverableSchema(exclude=['id', 'work_packages'])
+
+work_package_output_schema = WorkPackageSchema()
+work_package_input_schema = WorkPackageSchema(exclude=['id'])

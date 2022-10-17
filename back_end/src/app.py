@@ -13,12 +13,15 @@ from auth import auth_required
 
 from routes.auth_api import auth_api
 from routes.project_api import project_api
+from routes.deliverable_api import deliverable_api
 
 
 app = Flask(__name__)
 
 app.register_blueprint(auth_api)
 app.register_blueprint(project_api)
+app.register_blueprint(deliverable_api)
+
 
 @app.before_request
 def before_request():
@@ -39,9 +42,8 @@ def index(jwt_data):
 
 @app.route('/data_test', methods=['POST'])
 def data_test():
-    input = request.get_json()
     try:
-        data = test_schema.load(input)
+        data = test_schema.load(request.get_json())
     except ValidationError as err:
         return {'errors': err.messages}, 422
 
@@ -52,9 +54,8 @@ def data_test():
 
 @app.route('/time_schedule', methods=['POST'])
 def time_schedule():
-    input = request.get_json()
     try:
-        data = resource_loading_schema.load(input)
+        data = resource_loading_schema.load(request.get_json())
     except ValidationError as err:
         return {'errors': err.messages}, 422
 

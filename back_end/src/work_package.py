@@ -1,26 +1,5 @@
-from graph import Graph
-from marshmallow import Schema, fields, validate, validates_schema, post_load, post_dump, ValidationError
-
-
-class WorkPackageSchema(Schema):
-    name = fields.Str()
-    resources = fields.Int()
-    duration = fields.Int(required=True)
-
-    early_start = fields.Int()
-    early_finish = fields.Int()
-    late_start = fields.Int()
-    late_finish = fields.Int()
-    float = fields.Int()
-
-    @post_load
-    def make_work_package(self, data, **kwargs):
-        return WorkPackage(**data)
-
-    @post_dump
-    def remove_unused(self, data, **kwargs):
-        return {key: value for key, value in data.items() if value is not None}
-
+from marshmallow import Schema, fields, validate, validates_schema, ValidationError
+from schemas import WorkPackageSchema
 
 
 class RelationSchema(Schema):
@@ -41,7 +20,7 @@ class ResourceLoadingSchema(Schema):
                 raise ValidationError('RelationSchema between undefined work packages')
 
 
-resource_loading_schema = ResourceLoadingSchema();
+resource_loading_schema = ResourceLoadingSchema()
 
 
 class WorkPackage:
@@ -107,26 +86,3 @@ def critical_path(graph):
                 if target.float == 0:
                     critical_path.append(target)
     return critical_path
-
-
-if __name__ == '__main__':
-    a = WorkPackage('a', 1, 2)
-    b = WorkPackage('b', 3, 4)
-    c = WorkPackage('c', 5, 6)
-    d = WorkPackage('d', 7, 8)
-    e = WorkPackage('e', 9, 10)
-
-    graph = Graph()
-    
-    graph.add_edge(b, a, ('FS', 1))
-    graph.add_edge(b, d, ('FS', 3))
-    graph.add_edge(a, c, ('FS', 3))
-    graph.add_edge(d, c, ('FS', 4))
-    graph.add_edge(e, d, ('FS', 5))
-
-    search_forward(graph)
-    search_backward(graph)
-
-    print('Critical path:')
-    print(' -> '.join([node.name for node in critical_path(graph)]))
-
