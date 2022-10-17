@@ -1,4 +1,4 @@
-from marshmallow import Schema, fields, validate, pre_load
+from marshmallow import Schema, fields, validate, pre_load, validates_schema
 
 
 class TestSchema(Schema):
@@ -21,6 +21,13 @@ class WorkPackageSchema(Schema):
     resources = fields.Int()
     duration = fields.Int()
 
+    deliverable_id = fields.Int()
+    subdeliverable_id = fields.Int()
+
+    @validates_schema
+    def validate_id(self, data, **kwargs):
+        print(data, kwargs)
+
 
 class SubdeliverableSchema(Schema):
     id = fields.Int()
@@ -36,6 +43,7 @@ class DeliverableSchema(Schema):
     description = fields.Str()
 
     subdeliverables = fields.List(fields.Nested(SubdeliverableSchema))
+    work_packages = fields.List(fields.Nested(WorkPackageSchema))
 
 
 class ProjectSchema(Schema):
@@ -50,7 +58,7 @@ project_output_schema = ProjectSchema()
 project_input_schema = ProjectSchema(exclude=['project_id', 'deliverables'])
 
 deliverable_output_schema = DeliverableSchema()
-deliverable_input_schema = DeliverableSchema(exclude=['id', 'subdeliverables'])
+deliverable_input_schema = DeliverableSchema(exclude=['id', 'subdeliverables', 'work_packages'])
 
 subdeliverable_output_schema = SubdeliverableSchema()
 subdeliverable_input_schema = SubdeliverableSchema(exclude=['id', 'work_packages'])
