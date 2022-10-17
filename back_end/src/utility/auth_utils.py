@@ -1,5 +1,5 @@
 from peewee import DoesNotExist
-from database_models import ProjectOwnerTable, DeliverableTable, SubdeliverableTable
+from database_models import ProjectOwnerTable
 
 
 def has_project_access(user_id, project_id):

@@ -33,7 +33,7 @@ def create_project(jwt_data):
 @auth_required
 def get_project(jwt_data, project_id):
     if not has_project_access(jwt_data['uuid'], project_id):
-        return 'You do not have access to this project', 401
+        return {'errors': 'You do not have access to this project'}, 401
 
     project_condition = (ProjectTable.project_id == project_id)
 
@@ -44,24 +44,24 @@ def get_project(jwt_data, project_id):
             return {'errors': err.messages}, 422
         
         ProjectTable.update(**data).where(project_condition).execute()
-        return 'Project was updated', 200
+        return {'message': 'Project was updated'}, 200
 
     try:
         project = ProjectTable.get(project_condition)
     except DoesNotExist:
-        return 'Project was not found', 404
+        return {'errors': 'Project was not found'}, 404
 
     if request.method == 'DELETE':
         project.delete_instance(recursive=True)
-        return 'Project was deleted', 200
+        return {'message': 'Project was deleted'}, 200
 
     deliverables = get_deliverable_list(project.project_id)
     project_dict = model_to_dict(project)
     project_dict['deliverables'] = deliverables
-    return project_output_schema.dump(project_dict), 200
+    return {'project': project_output_schema.dump(project_dict)}, 200
 
 
-@project_api.route('/projects/list', methods=['GET'])
+@project_api.route('/projects', methods=['GET'])
 @auth_required
 def list_projects(jwt_data):
     project_owner_query = ProjectOwnerTable.select(
