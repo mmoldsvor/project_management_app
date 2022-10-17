@@ -1,0 +1,25 @@
+
+.deliverables__grid{
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-gap: 10px;
+}
+
+.deliverables__grid_left{
+  padding-top: 20px;
+  text-align: left;
+  padding-left: 100px;
+  grid-column: 1;
+}
+.deliverables__grid_right{
+  padding-top: 20px;
+  text-align: left;
+  padding-right: 100px;
+  grid-column: 2;
+}
+
+.deliverables__tables{
+  height: 300px;
+  width: 100%;
+}
+

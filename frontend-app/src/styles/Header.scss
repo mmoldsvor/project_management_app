@@ -1,0 +1,25 @@
+.header{
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  grid-template-rows: repeat(2, 1fr);
+  grid-column-gap: 5px;
+  grid-row-gap: 0px;
+  height: 100px;
+  background-color: red;
+  border-bottom-color: black;
+  border-bottom-width: 4px;
+  border-bottom-style: solid;
+}
+
+.header__one{
+  grid-column: 1/2;
+  grid-row: 1;
+  color: darkred;
+  padding: 10px;
+}
+.header__two{
+  grid-column: 4/6;
+  grid-row: 4;
+  color: aquamarine;
+  padding: 10px;
+}
