@@ -74,7 +74,7 @@ def time_schedule():
     
     return resource_loading_schema.dump(data)
 
-@app.route('/graph_test', methods=['POST'])
+@app.route('/graph_work_package', methods=['POST'])
 def graph_test():
     input = request.get_json()
     try:
