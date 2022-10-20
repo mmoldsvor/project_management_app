@@ -1,6 +1,7 @@
 $BORDER-RADIUS : 3px;
 
 .general__outer_div{
+  margin-top: 20px;
   padding-left: 100px;
   text-align: left;
 }
@@ -28,7 +29,6 @@ $BORDER-RADIUS : 3px;
   cursor: pointer;
   margin-right: 15px;
   border-radius: $BORDER-RADIUS;
-  grid-column: 1;
   float: left;
 }
 .general__button__main{
@@ -51,7 +51,7 @@ $BORDER-RADIUS : 3px;
 .general__text_input{
   padding-top: 10px;
   padding-bottom: 10px;
-  width: 70%;
+  width: 400px;
   margin-right: 50px;
   margin-top: 5px;
   border-width: 2px;
@@ -64,6 +64,10 @@ $BORDER-RADIUS : 3px;
 }
 
 input[type=text]{
+  padding-left: 15px;
+  font-size: 20px;
+}
+input[type=password]{
   padding-left: 15px;
   font-size: 20px;
 }
