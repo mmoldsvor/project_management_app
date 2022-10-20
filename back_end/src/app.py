@@ -15,6 +15,7 @@ from auth import auth_required
 from routes.auth_api import auth_api
 from routes.project_api import project_api
 from routes.deliverable_api import deliverable_api
+from routes.work_package_api import work_package_api
 
 
 app = Flask(__name__)
@@ -23,6 +24,7 @@ CORS(app)
 app.register_blueprint(auth_api)
 app.register_blueprint(project_api)
 app.register_blueprint(deliverable_api)
+app.register_blueprint(work_package_api)
 
 
 @app.before_request
@@ -70,7 +72,5 @@ def time_schedule():
     traverse_package_graph(graph)
     
     return resource_loading_schema.dump(data) 
-
-
 
 app.run(host='0.0.0.0')

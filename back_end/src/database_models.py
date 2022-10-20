@@ -51,16 +51,28 @@ class WorkPackageTable(BaseModel):
     duration = IntegerField()
     resources = IntegerField()
 
+    project = ForeignKeyField(ProjectTable)
+
+
+class SubdeliverableWorkPackageTable(BaseModel):
     subdeliverable = ForeignKeyField(SubdeliverableTable)
+    work_package = ForeignKeyField(WorkPackageTable)
+
     
+class DeliverableWorkPackageTable(BaseModel):
+    deliverable = ForeignKeyField(DeliverableTable)
+    work_package = ForeignKeyField(WorkPackageTable)
+
 
 def create_tables():
     with database:
         database.create_tables([
-            UserTable,
-            ProjectTable,
-            ProjectOwnerTable,
-            DeliverableTable,
-            SubdeliverableTable,
-            WorkPackageTable
+            # UserTable,
+            # ProjectTable,
+            # ProjectOwnerTable,
+            # DeliverableTable,
+            # SubdeliverableTable,
+            # WorkPackageTable,
+            SubdeliverableWorkPackageTable,
+            DeliverableWorkPackageTable
         ])
