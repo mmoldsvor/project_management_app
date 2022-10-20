@@ -1,5 +1,4 @@
 from marshmallow import Schema, fields, validate, validates_schema, ValidationError
-from schemas import WorkPackageSchema
 
 
 class RelationSchema(Schema):
@@ -9,18 +8,11 @@ class RelationSchema(Schema):
     duration = fields.Int(default=0)
 
 
-class ResourceLoadingSchema(Schema):
-    work_packages = fields.Dict(keys=fields.Str(), values=fields.Nested(WorkPackageSchema), required=True)
+class RelationsSchema(Schema):
     relations = fields.List(fields.Nested(RelationSchema), required=True)
 
-    @validates_schema
-    def validate_relations(self, data, **kwargs):
-        for relation in data['relations']:
-            if relation['source'] not in data['work_packages'] or relation['target'] not in data['work_packages']:
-                raise ValidationError('RelationSchema between undefined work packages')
 
-
-resource_loading_schema = ResourceLoadingSchema()
+relations_schema = RelationsSchema()
 
 class WorkPackage:
     def __init__(self, name, resources, duration, early_start=None, early_finish=None, late_start=None, late_finish=None):
@@ -34,7 +26,11 @@ class WorkPackage:
         self.late_finish = late_finish
 
     def __repr__(self):
-        return self.name
+        return str({
+            'name': self.name,
+            'resources': self.resources,
+            'duration': self.duration
+        })
 
     @property
     def float(self):
@@ -110,45 +106,8 @@ def search_backward(graph):
                     if target.late_finish is None or source.late_finish - duration < target.late_finish:
                         target.late_finish = source.late_finish - duration
                         target.late_start = target.late_finish - target.duration
-            
-            
 
 
 def traverse_package_graph(graph):
     search_forward(graph)
     search_backward(graph)
-
-
-<<<<<<< HEAD
-def critical_path(graph):
-    critical_path = []
-    for start_node in graph.start_nodes:
-        if start_node.float == 0:
-            critical_path.append(start_node)
-            for target, _, _ in graph.search(start_node):
-                if target.float == 0:
-                    critical_path.append(target)
-    return critical_path
-=======
-if __name__ == '__main__':
-    a = WorkPackage('a', 1, 2)
-    b = WorkPackage('b', 3, 4)
-    c = WorkPackage('c', 5, 6)
-    d = WorkPackage('d', 7, 8)
-    e = WorkPackage('e', 9, 10)
-
-    graph = Graph()
-    
-    graph.add_edge(b, a, ('FS', 1))
-    graph.add_edge(b, d, ('FS', 3))
-    graph.add_edge(a, c, ('FS', 3))
-    graph.add_edge(d, c, ('FS', 4))
-    graph.add_edge(e, d, ('FS', 5))
-
-    search_forward(graph)
-    search_backward(graph)
-
-    print('Critical path:')
-    print(' -> '.join([node.name for node in critical_path(graph)]))
-
->>>>>>> b3e17a6 (Implemented SF, FF and SS cases. Fixed graph search)

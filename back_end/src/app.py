@@ -6,9 +6,6 @@ from marshmallow import ValidationError
 
 from database_models import database
 from schemas import test_schema
-from work_package import resource_loading_schema, traverse_package_graph
-from render import work_package_graph
-from graph import Graph
 
 from auth import auth_required
 
@@ -17,6 +14,7 @@ from routes.auth_api import auth_api
 from routes.project_api import project_api
 from routes.deliverable_api import deliverable_api
 from routes.work_package_api import work_package_api
+from routes.graphic_api import graphic_api
 
 
 app = Flask(__name__)
@@ -26,6 +24,7 @@ app.register_blueprint(auth_api)
 app.register_blueprint(project_api)
 app.register_blueprint(deliverable_api)
 app.register_blueprint(work_package_api)
+app.register_blueprint(graphic_api)
 
 
 @app.before_request
@@ -56,41 +55,5 @@ def data_test():
 
     return result
 
-
-@app.route('/time_schedule', methods=['POST'])
-def time_schedule():
-    try:
-        data = resource_loading_schema.load(request.get_json())
-    except ValidationError as err:
-        return {'errors': err.messages}, 422
-
-    graph = Graph()
-    for relation in data['relations']:
-        target = data['work_packages'][relation['target']]
-        source = data['work_packages'][relation['source']]
-        graph.add_edge(source, target, (relation['relation'], relation['duration']))
-
-    traverse_package_graph(graph)
-    
-    return resource_loading_schema.dump(data)
-
-@app.route('/graph_work_package', methods=['POST'])
-def graph_test():
-    input = request.get_json()
-    try:
-        data = resource_loading_schema.load(input)
-    except ValidationError as err:
-        return {'errors': err.messages}, 422
-
-    graph = Graph()
-    for relation in data['relations']:
-        target = data['work_packages'][relation['target']]
-        source = data['work_packages'][relation['source']]
-        graph.add_edge(source, target, (relation['relation'], relation['duration']))
-
-    traverse_package_graph(graph)
-    x,y = work_package_graph(graph)
-    
-    return '\n'.join([str(x),str(y)])
 
 app.run(host='0.0.0.0')
