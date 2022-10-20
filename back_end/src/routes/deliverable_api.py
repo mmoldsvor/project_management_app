@@ -54,7 +54,7 @@ def get_or_delete_deliverable(jwt_data, project_id, deliverable_id):
         (DeliverableTable.id == deliverable_id)
     )
 
-    if request.method == 'PUT':
+    if request.method == 'POST':
         try:
             data = deliverable_input_schema.load(request.get_json())
         except ValidationError as err:
@@ -133,7 +133,7 @@ def get_or_delete_subdeliverable(jwt_data, project_id, deliverable_id, subdelive
         (SubdeliverableTable.id == subdeliverable_id)
     )
 
-    if request.method == 'PUT':
+    if request.method == 'POST':
         try:
             data = subdeliverable_input_schema.load(request.get_json())
         except ValidationError as err:

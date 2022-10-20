@@ -49,7 +49,8 @@ class DeliverableSchema(Schema):
 class ProjectSchema(Schema):
     project_id = fields.UUID()
     name = fields.Str(required=True)
-    description = fields.Str()
+    project_type = fields.Str(missing='')
+    description = fields.Str(missing='')
 
     deliverables = fields.List(fields.Nested(DeliverableSchema))
 

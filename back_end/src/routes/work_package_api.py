@@ -62,7 +62,7 @@ def list_work_packages(jwt_data, project_id):
     return {'work_packages': work_packages}, 200
 
 
-@work_package_api.route('/project/<project_id>/work_package/<work_package_id>', methods=['GET', 'DELETE', 'PUT'])
+@work_package_api.route('/project/<project_id>/work_package/<work_package_id>', methods=['GET', 'DELETE', 'POST'])
 @auth_required
 def work_package(jwt_data, project_id, work_package_id):
     if not has_project_access(jwt_data['uuid'], project_id):
@@ -73,7 +73,7 @@ def work_package(jwt_data, project_id, work_package_id):
         (WorkPackageTable.id == work_package_id)
     )
 
-    if request.method == 'PUT':
+    if request.method == 'POST':
         try:
             data = work_package_input_schema.load(request.get_json())
         except ValidationError as err:
@@ -92,3 +92,6 @@ def work_package(jwt_data, project_id, work_package_id):
         return {'errors': 'Work package was deleted'}, 200
     
     return work_package_output_schema.dump(model_to_dict(work_package)), 200
+
+
+
