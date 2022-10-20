@@ -26,10 +26,10 @@ def create_project(jwt_data):
     project = ProjectTable.create(**data)
     ProjectOwnerTable.create(user_id=jwt_data['uuid'], project_id=project.project_id)
     
-    return str(project.project_id), 201
+    return {'id': str(project.project_id)}, 201
 
 
-@project_api.route('/project/<project_id>', methods=['GET', 'DELETE', 'PUT'])
+@project_api.route('/project/<project_id>', methods=['GET', 'DELETE', 'POST'])
 @auth_required
 def get_project(jwt_data, project_id):
     if not has_project_access(jwt_data['uuid'], project_id):
@@ -37,7 +37,7 @@ def get_project(jwt_data, project_id):
 
     project_condition = (ProjectTable.project_id == project_id)
 
-    if request.method == 'PUT':
+    if request.method == 'POST':
         try:
             data = project_input_schema.load(request.get_json())
         except ValidationError as err:
@@ -71,9 +71,7 @@ def list_projects(jwt_data):
     projects = []
     for owned_project in project_owner_query:
         project_query = ProjectTable.select(
-            ProjectTable.project_id, 
-            ProjectTable.name, 
-            ProjectTable.description
+            ProjectTable
         ).where(
             ProjectTable.project_id == owned_project.project_id
         )

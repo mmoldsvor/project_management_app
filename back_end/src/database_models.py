@@ -23,6 +23,7 @@ class UserTable(BaseModel):
 class ProjectTable(BaseModel):
     project_id = UUIDField(primary_key=True, default=uuid.uuid4)
     name = CharField()
+    project_type = CharField()
     description = CharField()
 
 
@@ -63,16 +64,40 @@ class DeliverableWorkPackageTable(BaseModel):
     deliverable = ForeignKeyField(DeliverableTable)
     work_package = ForeignKeyField(WorkPackageTable)
 
+class WorkPackageRelationTable(BaseModel):
+    source = ForeignKeyField(WorkPackageTable)
+    target = ForeignKeyField(WorkPackageTable)
+    relation = CharField()
+    duration = IntegerField()
+
+    project = ForeignKeyField(ProjectTable)
+
 
 def create_tables():
     with database:
         database.create_tables([
-            # UserTable,
-            # ProjectTable,
-            # ProjectOwnerTable,
-            # DeliverableTable,
-            # SubdeliverableTable,
-            # WorkPackageTable,
+            UserTable,
+            ProjectTable,
+            ProjectOwnerTable,
+            DeliverableTable,
+            SubdeliverableTable,
+            WorkPackageTable,
             SubdeliverableWorkPackageTable,
-            DeliverableWorkPackageTable
+            DeliverableWorkPackageTable,
+            WorkPackageRelationTable
         ])
+
+def drop_tables():
+    with database:
+        database.drop_tables([
+            UserTable,
+            ProjectTable,
+            ProjectOwnerTable,
+            DeliverableTable,
+            SubdeliverableTable,
+            WorkPackageTable,
+            SubdeliverableWorkPackageTable,
+            DeliverableWorkPackageTable,
+            WorkPackageRelationTable
+        ],
+        cascade=True)

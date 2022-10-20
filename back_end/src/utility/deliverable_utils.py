@@ -93,3 +93,13 @@ def get_deliverable_list(project_id):
         deliverables.append(deliverable_output_schema.dump(deliverable_dict))
     
     return deliverables
+
+def work_package_in_project(work_package_id, project_id):
+    try:
+        WorkPackageTable.get(
+            (WorkPackageTable.id == work_package_id) &
+            (WorkPackageTable.project == project_id)
+        )
+    except DoesNotExist:
+        return False
+    return True

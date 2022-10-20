@@ -4,10 +4,11 @@ from peewee import DoesNotExist
 from playhouse.shortcuts import model_to_dict
 
 from auth import auth_required
-from schemas import work_package_input_schema, work_package_output_schema
-from database_models import WorkPackageTable, DeliverableWorkPackageTable, SubdeliverableWorkPackageTable
+from schemas import work_package_input_schema, work_package_output_schema, work_package_relation_output_schema, work_package_relation_input_schema
+from database_models import WorkPackageTable, DeliverableWorkPackageTable, SubdeliverableWorkPackageTable, WorkPackageRelationTable
 
 from utility.auth_utils import has_project_access
+from utility.deliverable_utils import work_package_in_project
 
 work_package_api = Blueprint('work_package_api', __name__)
 
@@ -62,7 +63,7 @@ def list_work_packages(jwt_data, project_id):
     return {'work_packages': work_packages}, 200
 
 
-@work_package_api.route('/project/<project_id>/work_package/<work_package_id>', methods=['GET', 'DELETE', 'PUT'])
+@work_package_api.route('/project/<project_id>/work_package/<work_package_id>', methods=['GET', 'DELETE', 'POST'])
 @auth_required
 def work_package(jwt_data, project_id, work_package_id):
     if not has_project_access(jwt_data['uuid'], project_id):
@@ -73,7 +74,7 @@ def work_package(jwt_data, project_id, work_package_id):
         (WorkPackageTable.id == work_package_id)
     )
 
-    if request.method == 'PUT':
+    if request.method == 'POST':
         try:
             data = work_package_input_schema.load(request.get_json())
         except ValidationError as err:
@@ -92,3 +93,80 @@ def work_package(jwt_data, project_id, work_package_id):
         return {'errors': 'Work package was deleted'}, 200
     
     return work_package_output_schema.dump(model_to_dict(work_package)), 200
+
+
+@work_package_api.route('/project/<project_id>/relation', methods=['POST'])
+@auth_required
+def create_relation(jwt_data, project_id):
+    if not has_project_access(jwt_data['uuid'], project_id):
+        return {'errors': 'You do not have access to this project'}, 401
+
+    try:
+        data = work_package_relation_input_schema.load(request.get_json())
+    except ValidationError as err:
+        return {'errors': err.messages}, 422
+
+    if (not work_package_in_project(data['source_id'], project_id) or
+        not work_package_in_project(data['target_id'], project_id)):
+        return {'errors': 'Relation not found'}, 404
+
+    relation = WorkPackageRelationTable.create(
+        **data,
+        project=project_id
+    )
+    
+    return {'id': str(relation.id)}, 200 
+
+@work_package_api.route('/project/<project_id>/relations', methods=['GET'])
+@auth_required
+def list_work_package_relations(jwt_data, project_id):
+    if not has_project_access(jwt_data['uuid'], project_id):
+        return {'errors': 'You do not have access to this project'}, 401
+
+    relation_query = WorkPackageRelationTable.select(
+        WorkPackageRelationTable
+    ).where(
+        WorkPackageRelationTable.project == project_id
+    )
+
+    relations = []
+    for relation in relation_query:
+        relations.append(work_package_relation_output_schema.dump(relation))
+    
+    return {'relations': relations}, 200
+
+
+@work_package_api.route('/project/<project_id>/relation/<relation_id>', methods=['GET', 'DELETE', 'POST'])
+@auth_required
+def work_package_relation(jwt_data, project_id, relation_id):
+    if not has_project_access(jwt_data['uuid'], project_id):
+        return {'errors': 'You do not have access to this project'}, 401
+
+    relation_condition = (
+        (WorkPackageRelationTable.project == project_id) & 
+        (WorkPackageRelationTable.id == relation_id)
+    )
+
+    if request.method == 'POST':
+        try:
+            data = work_package_relation_input_schema.load(request.get_json())
+        except ValidationError as err:
+            return {'errors': err.messages}, 422
+        
+        if (not work_package_in_project(data['source_id'], project_id) or
+            not work_package_in_project(data['target_id'], project_id)):
+            return {'errors': 'Relation not found'}, 404
+        
+        WorkPackageRelationTable.update(**data).where(relation_condition).execute()
+        return {'message': 'Relation was updated'}, 200
+
+    try:
+        relation = WorkPackageRelationTable.get(relation_condition)
+    except DoesNotExist:
+        return {'errors': 'Relation not found'}, 404
+
+    if request.method == 'DELETE':
+        relation.delete_instance()
+        return {'errors': 'Relation was deleted'}, 200
+    
+    return work_package_relation_output_schema.dump(model_to_dict(relation)), 200
