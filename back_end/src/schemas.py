@@ -22,8 +22,8 @@ class WorkPackageSchema(Schema):
     resources = fields.Int()
     duration = fields.Int()
 
-    deliverable_id = fields.Int()
-    subdeliverable_id = fields.Int()
+    deliverable_id = fields.Int(data_key='deliverable')
+    subdeliverable_id = fields.Int(data_key='subdeliverable')
 
     @validates_schema
     def validate_id(self, data, **kwargs):
@@ -48,7 +48,7 @@ class DeliverableSchema(Schema):
 
 
 class ProjectSchema(Schema):
-    project_id = fields.UUID()
+    project_id = fields.UUID(required=True)
     name = fields.Str(required=True)
     project_type = fields.Str(missing='')
     description = fields.Str(missing='')
@@ -56,8 +56,9 @@ class ProjectSchema(Schema):
     deliverables = fields.List(fields.Nested(DeliverableSchema))
 
 class WorkPackageRelationSchema(Schema):
-    source_id = fields.Int(required=True) 
-    target_id = fields.Int(required=True)
+    id = fields.Int()
+    source_id = fields.Int(required=True, data_key='source')
+    target_id = fields.Int(required=True, data_key='target')
     relation = fields.Str(required=True, validate=validate.OneOf(('FS', 'FF', 'SS', 'SF')))
     duration = fields.Int(missing=0)
 
@@ -81,4 +82,5 @@ subdeliverable_input_schema = SubdeliverableSchema(exclude=['id', 'work_packages
 work_package_output_schema = WorkPackageSchema()
 work_package_input_schema = WorkPackageSchema(exclude=['id'])
 
-work_package_relation_schema = WorkPackageRelationSchema()
+work_package_relation_output_schema = WorkPackageRelationSchema()
+work_package_relation_input_schema = WorkPackageRelationSchema(exclude=['id'])

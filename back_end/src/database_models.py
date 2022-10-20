@@ -70,6 +70,8 @@ class WorkPackageRelationTable(BaseModel):
     relation = CharField()
     duration = IntegerField()
 
+    project = ForeignKeyField(ProjectTable)
+
 
 def create_tables():
     with database:
