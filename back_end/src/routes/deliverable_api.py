@@ -13,7 +13,7 @@ from utility.deliverable_utils import get_deliverable_list, get_subdeliverable_l
 deliverable_api = Blueprint('deliverable_api', __name__)
 
 
-@deliverable_api.route('/project/<project_id>/deliverable', methods=['POST'])
+@deliverable_api.route('/project/<project_id>/deliverable/', methods=['POST'])
 @auth_required
 def create_deliverable(jwt_data, project_id):
     if not has_project_access(jwt_data['uuid'], project_id):
@@ -43,7 +43,7 @@ def list_deliverables(jwt_data, project_id):
     return {'deliverables': deliverables}, 200
 
 
-@deliverable_api.route('/project/<project_id>/deliverable/<deliverable_id>', methods=['GET', 'DELETE'])
+@deliverable_api.route('/project/<project_id>/deliverable/<deliverable_id>', methods=['GET', 'POST', 'DELETE'])
 @auth_required
 def get_or_delete_deliverable(jwt_data, project_id, deliverable_id):
     if not has_project_access(jwt_data['uuid'], project_id):
@@ -54,7 +54,7 @@ def get_or_delete_deliverable(jwt_data, project_id, deliverable_id):
         (DeliverableTable.id == deliverable_id)
     )
 
-    if request.method == 'PUT':
+    if request.method == 'POST':
         try:
             data = deliverable_input_schema.load(request.get_json())
         except ValidationError as err:
@@ -78,7 +78,7 @@ def get_or_delete_deliverable(jwt_data, project_id, deliverable_id):
     return {'deliverable': deliverable_output_schema.dump(deliverable_dict)}, 200
 
 
-@deliverable_api.route('/project/<project_id>/deliverable/<deliverable_id>/subdeliverable', methods=['POST'])
+@deliverable_api.route('/project/<project_id>/deliverable/<deliverable_id>/subdeliverable/', methods=['POST'])
 @auth_required
 def create_subdeliverable(jwt_data, project_id, deliverable_id):
     if not has_project_access(jwt_data['uuid'], project_id):

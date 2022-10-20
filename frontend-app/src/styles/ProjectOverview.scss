@@ -1,0 +1,16 @@
+.projectCard{
+  border-style: solid;
+  border-color: black;
+  border-width: 4px;
+  margin-top: 50px;
+  width: 600px;
+  height: 200px;
+}
+.projectCard__selected{
+  @extend .projectCard;
+  border-color: #216ba5;
+}
+
+.projectCard__inner{
+  padding-left: 20px;
+}

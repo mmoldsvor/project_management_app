@@ -8,19 +8,20 @@ const parseJwt = (token) => {
 };
 
 export function checkToken(){
-    const token = sessionStorage.getItem("login-token")
+    const token = localStorage.getItem("login-token")
     const decodedJWT = parseJwt(token)
     if (decodedJWT !== null) {
         if(decodedJWT.exp * 1000 < Date.now()) {
-            window.location.href(window.location.host + "/logout")
+            localStorage.removeItem("login-token")
+            window.location.href = window.location.origin + "/login"
         }
     }
     return token
 }
 export function setToken(token){
-    sessionStorage.setItem("login-token", token)
+    localStorage.setItem("login-token", token)
 }
 
 export function isLoggedIn() {
-    return (checkToken() !== "")
+    return (checkToken() !== null)
 }

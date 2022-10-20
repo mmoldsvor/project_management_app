@@ -8,39 +8,44 @@ import {Typography} from "@mui/material";
 
 
 
-export default function LoginPage(){
+export default function CreateUser(){
     const navigate = useNavigate()
-
-    const login = async () => {
-        const data = JSON.stringify(state)
-        const token = await client.authenticate(data)
-        if (token?.token === undefined) {
-            setBadLogin(true)
-        } else {
-            setBadLogin(false)
-            setToken(token.token)
-            navigate("/")
+    const createUser = async () => {
+        if (state.password !== duplicatePassword) {
+            console.log("Not duplicate")
+            return
         }
+        const data = JSON.stringify(state)
+        const response = await client.createUser(data)
+        console.log((response))
+        if (response?.message !== "User created"){return}
+        const token = await client.authenticate(JSON.stringify({
+            "email": state.email,
+            "password": state.password
+        }))
+        setToken(token?.token)
+        navigate("/")
     }
     const [state, setState] = useState({
         "email": "",
-        "password": ""
+        "password": "",
+        "name": ""
     })
-    const [badLogin, setBadLogin] = useState(false)
+    const [duplicatePassword, setDuplicatePassword] = useState("")
     const changeHandler = (e) => {
         setState(prevState => {
             return {...prevState, [e.target.name] : e.target.value}
         })
     }
+
     useEffect(() => {
-        if(isLoggedIn()){navigate("/")}
+        if (isLoggedIn()) {
+            navigate("/")
+        }
     }, [])
 
     return (
         <div className={"general__outer_div"}>
-            {badLogin && <Typography>
-                Password or email incorrect
-            </Typography>}
             <TextInput
                 label={"Email"}
                 name="email"
@@ -49,20 +54,20 @@ export default function LoginPage(){
             />
             <TextInput
                 label={"Password"}
-                type={"password"}
                 name="password"
                 value={state.password}
                 onChange={changeHandler}
-                onKeyDown={(e) => {if(e.key ==="Enter"){login()}}}
+            />
+            <TextInput
+                label={"Repeat password"}
+                name="password_duplicate"
+                value={duplicatePassword}
+                onChange={(e) => setDuplicatePassword(e.target.value)}
+                onKeyDown={(e) => {if(e.key ==="Enter"){createUser()}}}
             />
             <Button
-                label={"Login"}
-                onClick={(_) => login()}
-            />
-            <Button
-                color={"white"}
                 label={"Create user"}
-                onClick={(_) => navigate("/create-user")}
+                onClick={(_) => createUser()}
             />
         </div>
     )

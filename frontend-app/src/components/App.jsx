@@ -5,7 +5,8 @@ import InfoDrawer from "./Drawer";
 import {BrowserRouter, Routes} from "react-router-dom";
 import {AppRoutes} from "../routes/Routes";
 import OurClient from "../client/client";
-export const client =  new OurClient("http://localhost:5000")
+export const client =  new OurClient("http://ec2-16-170-232-148.eu-north-1.compute.amazonaws.com:80")
+// export const client =  new OurClient("http://localhost:5000")
 export const globalVariables = {
     "baseUrl": window.location.origin
 }
