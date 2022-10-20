@@ -2,15 +2,22 @@ from unittest import skip
 from marshmallow import Schema, fields, validate, pre_load, validates_schema, ValidationError
 
 
-class TestSchema(Schema):
+class TestSchema1(Schema):
     test_int = fields.Int(reqired=True, validate=validate.Range(min=0, max=50))
     test_field = fields.Str(required=True, validate=validate.Length(max=15))
+    hello = fields.Str()
 
     @pre_load
     def lowercase(self, data, **kwargs):
         if 'test_field' in data:
             data['test_field'] = data['test_field'].lower().strip()
         return data
+
+class TestSchema(Schema):
+    duration = fields.Int(required=True, validate=validate.Range(min=0))
+    mapping = fields.Str(required=True, validate=validate.OneOf(['SF', 'SS', 'FS', 'FF']))
+
+
 
 test_schema = TestSchema()
 
