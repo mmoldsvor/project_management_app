@@ -1,11 +1,12 @@
 from flask import request, Blueprint
 from marshmallow import ValidationError
 
-from database_models import WorkPackageTable
+from database_models import WorkPackageTable, WorkPackageRelationTable
 from work_package import relations_schema, traverse_package_graph, WorkPackage
 from render import work_package_graph
 from graph import Graph
 from auth import auth_required
+from schemas import work_package_relation_output_schema
 
 from utility.auth_utils import has_project_access
 
@@ -19,11 +20,6 @@ def time_schedule(jwt_data, project_id):
     if not has_project_access(jwt_data['uuid'], project_id):
         return {'errors': 'You do not have access to this project'}, 401
 
-    try:
-        data = relations_schema.load(request.get_json())
-    except ValidationError as err:
-        return {'errors': err.messages}, 422
-
     work_package_query = WorkPackageTable.select(
         WorkPackageTable
     ).where(
@@ -32,14 +28,24 @@ def time_schedule(jwt_data, project_id):
 
     work_package_dict = {}
     for work_package in work_package_query:
-        work_package_dict[work_package.name] = WorkPackage(
+        work_package_dict[work_package.id] = WorkPackage(
             name=work_package.name,
             resources=work_package.resources,
             duration=work_package.duration
         )
 
+    relation_query = WorkPackageRelationTable.select(
+        WorkPackageRelationTable
+    ).where(
+        WorkPackageRelationTable.project == project_id
+    )
+
+    relations = []
+    for relation in relation_query:
+        relations.append(work_package_relation_output_schema.dump(relation))
+    
     graph = Graph()
-    for relation in data['relations']:
+    for relation in relations:
         target = work_package_dict[relation['target']]
         source = work_package_dict[relation['source']]
         graph.add_edge(source, target, (relation['relation'], relation['duration']))
@@ -52,7 +58,8 @@ def time_schedule(jwt_data, project_id):
             'early_start': node.early_start,
             'early_finish': node.early_finish,
             'late_start': node.late_start,
-            'late_finish': node.late_finish
+            'late_finish': node.late_finish,
+            'float': node.float
         }
 
     return work_package_dates
