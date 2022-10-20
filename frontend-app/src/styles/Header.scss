@@ -1,9 +1,7 @@
 .header{
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
+  grid-template-columns: repeat(6, 1fr);
   //grid-template-rows: repeat(2, 1fr);
-  grid-column-gap: 5px;
-  grid-row-gap: 0px;
   height: 100px;  
   background-color: rgb(212, 238, 246);
   border-bottom-color: black;
@@ -20,42 +18,67 @@
   //font-weight: bolder;
   padding-top: 10px;
   padding-left: 12px;
+  cursor: pointer;
 }
 .header__login_loggedin{
-  grid-column: 4/5;
+  grid-column: 6;
+  margin-right: 30px;
   font-size: x-large;
   text-align: right;
   color: rgb(13, 0, 0);
+  cursor: pointer;
 }
 .header__loggedin{
-  grid-column: 4/5;
   text-align: right;
   padding-top: 15px;
 }
 .header__login{
-  grid-column: 4/5;
+  @extend .header__button;
+  margin-top: 30px;
   text-align: right;
   font-size: large;
-  padding-top: 37px;
   font-weight: bolder;
   }
 
+.header__mid{
+  grid-column: 3;
+  padding-left: 400px;
+  padding-right: 500px;
+}
+
 .header__start{
-  grid-column: 5/6;
-  
+  grid-column: 6;
   padding-top: 30px;
   //background-color: rgb(201, 45, 201);
   //grid-row: 4;
   color: rgb(13, 0, 0);
 }
+
+.header__deliverables{
+  grid-column: 5;
+  text-align: right;
+  align-content: center;
+  grid-row: 1;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-column-gap: 10px;
+  padding-top: 10px;
+}
+
 .header__button{
-  grid-column: 5/6;
-  padding: 5px 20px;
+  padding: 10px 30px;
   border-color: rgb(13, 0, 0) ;
   border-width:3px;
   border-style: solid ;
-  border-radius: 25px;
+  border-radius: 10px;
   background-color:rgb(148, 225, 140) ;
   font-size: large;
-  display: inline-block;
+  cursor: pointer;
+  white-space: nowrap;
 }
+
+.header__text{
+  font-size: 20px;
+  position: center;
+}
+
