@@ -64,6 +64,12 @@ class DeliverableWorkPackageTable(BaseModel):
     deliverable = ForeignKeyField(DeliverableTable)
     work_package = ForeignKeyField(WorkPackageTable)
 
+class WorkPackageRelationTable(BaseModel):
+    source = ForeignKeyField(WorkPackageTable)
+    target = ForeignKeyField(WorkPackageTable)
+    relation = CharField()
+    duration = IntegerField()
+
 
 def create_tables():
     with database:
@@ -75,5 +81,21 @@ def create_tables():
             SubdeliverableTable,
             WorkPackageTable,
             SubdeliverableWorkPackageTable,
-            DeliverableWorkPackageTable
+            DeliverableWorkPackageTable,
+            WorkPackageRelationTable
         ])
+
+def drop_tables():
+    with database:
+        database.drop_tables([
+            UserTable,
+            ProjectTable,
+            ProjectOwnerTable,
+            DeliverableTable,
+            SubdeliverableTable,
+            WorkPackageTable,
+            SubdeliverableWorkPackageTable,
+            DeliverableWorkPackageTable,
+            WorkPackageRelationTable
+        ],
+        cascade=True)

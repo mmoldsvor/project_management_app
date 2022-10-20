@@ -26,7 +26,7 @@ def create_project(jwt_data):
     project = ProjectTable.create(**data)
     ProjectOwnerTable.create(user_id=jwt_data['uuid'], project_id=project.project_id)
     
-    return str(project.project_id), 201
+    return {'id': str(project.project_id)}, 201
 
 
 @project_api.route('/project/<project_id>', methods=['GET', 'DELETE', 'POST'])

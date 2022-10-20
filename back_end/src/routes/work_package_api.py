@@ -4,10 +4,11 @@ from peewee import DoesNotExist
 from playhouse.shortcuts import model_to_dict
 
 from auth import auth_required
-from schemas import work_package_input_schema, work_package_output_schema
-from database_models import WorkPackageTable, DeliverableWorkPackageTable, SubdeliverableWorkPackageTable
+from schemas import work_package_input_schema, work_package_output_schema, work_package_relation_schema
+from database_models import WorkPackageTable, DeliverableWorkPackageTable, SubdeliverableWorkPackageTable, WorkPackageRelationTable
 
 from utility.auth_utils import has_project_access
+from utility.deliverable_utils import work_package_in_project
 
 work_package_api = Blueprint('work_package_api', __name__)
 
@@ -94,4 +95,23 @@ def work_package(jwt_data, project_id, work_package_id):
     return work_package_output_schema.dump(model_to_dict(work_package)), 200
 
 
+@work_package_api.route('/project/<project_id>/relation', methods=['POST'])
+@auth_required
+def create_relation(jwt_data, project_id):
+    if not has_project_access(jwt_data['uuid'], project_id):
+        return {'errors': 'You do not have access to this project'}, 401
 
+    try:
+        data = work_package_relation_schema.load(request.get_json())
+    except ValidationError as err:
+        return {'errors': err.messages}, 422
+
+    if (not work_package_in_project(data['source_id'], project_id) or
+        not work_package_in_project(data['target_id'], project_id)):
+        return {'errors': 'Work packages not found'}, 404
+
+    deliverable = WorkPackageRelationTable.create(
+        **data
+    )
+    
+    return {'id': str(deliverable.id)}, 200 

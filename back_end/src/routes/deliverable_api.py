@@ -5,7 +5,7 @@ from playhouse.shortcuts import model_to_dict
 
 from auth import auth_required
 from database_models import DeliverableTable, SubdeliverableTable
-from schemas import deliverable_input_schema, deliverable_output_schema, subdeliverable_input_schema, subdeliverable_output_schema, work_package_input_schema, work_package_output_schema
+from schemas import deliverable_input_schema, deliverable_output_schema, subdeliverable_input_schema, subdeliverable_output_schema
 
 from utility.auth_utils import has_project_access
 from utility.deliverable_utils import get_deliverable_list, get_subdeliverable_list, deliverable_exists, get_work_package_deliverable_list, get_work_package_subdeliverable_list

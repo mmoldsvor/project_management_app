@@ -1,4 +1,5 @@
-from marshmallow import Schema, fields, validate, pre_load, validates_schema
+from unittest import skip
+from marshmallow import Schema, fields, validate, pre_load, validates_schema, ValidationError
 
 
 class TestSchema(Schema):
@@ -54,6 +55,19 @@ class ProjectSchema(Schema):
 
     deliverables = fields.List(fields.Nested(DeliverableSchema))
 
+class WorkPackageRelationSchema(Schema):
+    source_id = fields.Int(required=True) 
+    target_id = fields.Int(required=True)
+    relation = fields.Str(required=True, validate=validate.OneOf(('FS', 'FF', 'SS', 'SF')))
+    duration = fields.Int(missing=0)
+
+    @validates_schema(skip_on_field_errors=True)
+    def unique_relation(self, data, many, partial):
+        if data['source_id'] == data['target_id']:
+            raise ValidationError(
+                'Source and target cannot have the same id'
+            )
+
 
 project_output_schema = ProjectSchema()
 project_input_schema = ProjectSchema(exclude=['project_id', 'deliverables'])
@@ -66,3 +80,5 @@ subdeliverable_input_schema = SubdeliverableSchema(exclude=['id', 'work_packages
 
 work_package_output_schema = WorkPackageSchema()
 work_package_input_schema = WorkPackageSchema(exclude=['id'])
+
+work_package_relation_schema = WorkPackageRelationSchema()
