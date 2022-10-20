@@ -6,7 +6,8 @@ import Button from "./Button";
 
 export default function FrontPage(){
     const navigate = useNavigate()
-    const token = "......"
+    const data = {"email": "testing@email.com",
+                    "password": "testing"}
     return(
         <div>
             <Title>
@@ -17,7 +18,7 @@ export default function FrontPage(){
             </Typography>
             <Button
                 variant={"contained"}
-                onClick={() => {OurClient("").pingBackend(token).then(console.log)}}
+                // onClick={() => {client.authenticate(JSON.stringify(data)).then(console.log)}}
                 label={"Ping server"}
             />
 

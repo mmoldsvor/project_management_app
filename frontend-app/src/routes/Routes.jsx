@@ -6,6 +6,7 @@ import Header from "../components/Header";
 import ProjectSuccess from "../components/ProjectSuccess";
 import ProjectDeliverables from "../components/ProjectDeliverables";
 import ProjectWorkpackages from "../components/ProjectWorkpackages";
+import LoginPage from "../authorization/LoginPage";
 
 export const AppRoutes = (
     <Routes>
@@ -15,5 +16,6 @@ export const AppRoutes = (
         <Route key="success" path="/success" element={<ProjectSuccess />} />
         <Route key="deliverables" path="/deliverables" element={<ProjectDeliverables />} />
         <Route key="work-packages" path="/work-packages" element={<ProjectWorkpackages/>} />
+        <Route key="login" path="/login" element={<LoginPage/>} />
     </Routes>
 );

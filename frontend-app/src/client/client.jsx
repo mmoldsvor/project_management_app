@@ -5,17 +5,29 @@ export default class OurClient {
             this.baseUrl = baseUrl;
         }
 
-    async pingBackend(authToken){
-        const url = new URL(``,this.baseUrl)
+    async authenticate(data){
+        const url = new URL(`/authenticate`,this.baseUrl)
             const resp = await fetch(url, {
-                         method: "GET",
+                         method: "POST",
                          headers: {
-                    "Content-Type": "application/json",
-                    "Authorization": "Bearer " + authToken
-                 },
+                            "Content-Type": "application/json"
+                            },
+                body: data
             });
+        // return resp
         return handleResponse(resp);
-
+    }
+    async postDeliverable(token, id, data){
+        const url = new URL(`/project/db3fda13-08e6-4b7e-a926-4d9c466e2050/deliverable/${id}`,this.baseUrl)
+        const resp = await fetch(url, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": "Bearer " + token
+            },
+            body: data
+        });
+        return handleResponse(resp);
     }
 }
 
@@ -30,6 +42,6 @@ async function handleResponse(response){
         case 404:
             return null
         default:
-            throw Error()
+            return response
     }
 }
