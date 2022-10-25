@@ -8,7 +8,7 @@ from schemas import work_package_input_schema, work_package_output_schema, work_
 from database_models import WorkPackageTable, DeliverableWorkPackageTable, SubdeliverableWorkPackageTable, WorkPackageRelationTable
 
 from utility.auth_utils import has_project_access
-from utility.deliverable_utils import work_package_in_project
+from utility.deliverable_utils import work_package_in_project, get_connected_subdeliverable, get_connected_deliverable
 
 work_package_api = Blueprint('work_package_api', __name__)
 
@@ -44,7 +44,7 @@ def create_work_package(jwt_data, project_id):
     return {'id': work_package.id}, 200
 
 
-@work_package_api.route('/project/<project_id>/work_packages', methods=['GET'])
+@work_package_api.route('/project/<project_id>/work_packages/', methods=['GET'])
 @auth_required
 def list_work_packages(jwt_data, project_id):
     if not has_project_access(jwt_data['uuid'], project_id):
@@ -58,7 +58,17 @@ def list_work_packages(jwt_data, project_id):
 
     work_packages = []
     for work_package in work_package_query:
-        work_packages.append(work_package_output_schema.dump(model_to_dict(work_package)))
+        work_package_dict = model_to_dict(work_package)
+
+        subdeliverable_id = get_connected_subdeliverable(work_package.id)
+        if subdeliverable_id is not None:
+            work_package_dict['subdeliverable_id'] = subdeliverable_id
+        
+        deliverable_id = get_connected_deliverable(work_package.id)
+        if deliverable_id is not None:
+            work_package_dict['deliverable_id'] = deliverable_id 
+
+        work_packages.append(work_package_output_schema.dump(work_package_dict))
     
     return {'work_packages': work_packages}, 200
 
@@ -92,10 +102,20 @@ def work_package(jwt_data, project_id, work_package_id):
         work_package.delete_instance()
         return {'errors': 'Work package was deleted'}, 200
     
-    return work_package_output_schema.dump(model_to_dict(work_package)), 200
+    work_package_dict = model_to_dict(work_package)
+
+    subdeliverable_id = get_connected_subdeliverable(work_package.id)
+    if subdeliverable_id is not None:
+        work_package_dict['subdeliverable_id'] = subdeliverable_id
+    
+    deliverable_id = get_connected_deliverable(work_package.id)
+    if deliverable_id is not None:
+        work_package_dict['deliverable_id'] = deliverable_id 
+    
+    return {'work_package': work_package_output_schema.dump(work_package_dict)}, 200
 
 
-@work_package_api.route('/project/<project_id>/relation', methods=['POST'])
+@work_package_api.route('/project/<project_id>/relation/', methods=['POST'])
 @auth_required
 def create_relation(jwt_data, project_id):
     if not has_project_access(jwt_data['uuid'], project_id):
@@ -169,4 +189,4 @@ def work_package_relation(jwt_data, project_id, relation_id):
         relation.delete_instance()
         return {'errors': 'Relation was deleted'}, 200
     
-    return work_package_relation_output_schema.dump(model_to_dict(relation)), 200
+    return {'relation': work_package_relation_output_schema.dump(model_to_dict(relation))}, 200

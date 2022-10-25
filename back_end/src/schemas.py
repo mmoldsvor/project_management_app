@@ -29,8 +29,8 @@ class WorkPackageSchema(Schema):
     resources = fields.Int()
     duration = fields.Int()
 
-    deliverable_id = fields.Int(data_key='deliverable')
-    subdeliverable_id = fields.Int(data_key='subdeliverable')
+    deliverable_id = fields.Int()
+    subdeliverable_id = fields.Int()
 
     @validates_schema
     def validate_id(self, data, **kwargs):
