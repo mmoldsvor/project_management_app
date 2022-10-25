@@ -103,3 +103,25 @@ def work_package_in_project(work_package_id, project_id):
     except DoesNotExist:
         return False
     return True
+
+
+def get_connected_subdeliverable(work_package_id):
+    try:
+        subdeliverable_connection = SubdeliverableWorkPackageTable.get(
+            SubdeliverableWorkPackageTable.work_package == work_package_id
+        )
+
+        return str(subdeliverable_connection)
+    except DoesNotExist:
+        return None
+
+
+def get_connected_deliverable(work_package_id):
+    try:
+        deliverable_connection = DeliverableWorkPackageTable.get(
+            DeliverableWorkPackageTable.work_package == work_package_id
+        )
+        
+        return str(deliverable_connection)
+    except DoesNotExist:
+        return None
