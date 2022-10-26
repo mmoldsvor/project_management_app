@@ -78,6 +78,38 @@ export default class OurClient {
         return handleResponse(resp);
     }
 
+    async postWorkPackage(work_package_id, data){
+        const token = checkToken()
+        const projectId = this.getProjectId()
+        const url = (work_package_id !== "") ?
+            new URL(`/project/${projectId}/work_package/${work_package_id}`,this.baseUrl)
+            : new URL(`/project/${projectId}/work_package`,this.baseUrl)
+        const resp = await fetch(url, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": "Bearer " + token
+            },
+            body: data
+        });
+        return handleResponse(resp);
+    }
+
+    async postRelation(relation_ID, data){
+        const token = checkToken()
+        const projectId = this.getProjectId()
+        const url = new URL(`/project/${projectId}/relation/${relation_ID}`,this.baseUrl)
+        const resp = await fetch(url, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": "Bearer " + token
+            },
+            body: data
+        });
+        return handleResponse(resp);
+    }
+
     async fetchProjects(){
         const token = checkToken()
         const url = new URL(`/projects`,this.baseUrl)
@@ -110,6 +142,32 @@ export default class OurClient {
         const token = checkToken()
         const project_id = this.getProjectId()
         const url = new URL(`/project/${project_id}/deliverables`,this.baseUrl)
+        const resp = await fetch(url, {
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": "Bearer " + token
+            }
+        });
+        return handleResponse(resp);
+    }
+
+    async fetchWorkPackages(){
+        const token = checkToken()
+        const project_id = this.getProjectId()
+        const url = new URL(`/project/${project_id}/work_packages/`,this.baseUrl)
+        const resp = await fetch(url, {
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": "Bearer " + token
+            }
+        });
+        return handleResponse(resp);
+    }
+
+    async fetchRelations(){
+        const token = checkToken()
+        const project_id = this.getProjectId()
+        const url = new URL(`/project/${project_id}/relations`,this.baseUrl)
         const resp = await fetch(url, {
             headers: {
                 "Content-Type": "application/json",

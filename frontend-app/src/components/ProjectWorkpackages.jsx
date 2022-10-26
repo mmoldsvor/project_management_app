@@ -8,6 +8,7 @@ import "../styles/Datepicker.scss"
 import Button from "./Button";
 import TextInput from "./TextInput";
 import {DataGrid, GridColDef} from "@mui/x-data-grid";
+import {client} from "./App";
 
 const testObject = {
     "deliverables": {
@@ -20,52 +21,105 @@ const testObject = {
 }
 
 
+
+const databaseIDs = {}
 export default function ProjectWorkpackages() {
     let {state} = useLocation()
     if (state === null) {state = testObject}
     const navigate = useNavigate()
-    const [deliverables, setDeliverables] = useState({})
+
+    const [deliverablesAndSubDeliverables, setDeliverablesAndSubDeliverables] = useState([])
+    const loadDeliverablesAndSubDeliverables = async () => {
+        const projectInfo = await client.fetchProjectInfo()
+        const tempDeliverablesAndSubDeliverables = []
+        projectInfo?.project?.deliverables.forEach(deliverable => {
+            tempDeliverablesAndSubDeliverables.push({
+                name: deliverable.name,
+                description: deliverable.description})
+            deliverable?.subdeliverables?.forEach(subDeliverable => {
+                tempDeliverablesAndSubDeliverables.push({
+                    name: subDeliverable.name,
+                    description: subDeliverable.description
+                })
+            })
+        })
+        setDeliverablesAndSubDeliverables(tempDeliverablesAndSubDeliverables)
+    }
+    const loadWorkPackages = async () => {
+        const workPackages = await client.fetchWorkPackages()
+        const tempWorkPackageRows = []
+        workPackages?.work_packages.forEach(pack => {
+            const id = (tempWorkPackageRows?.at(-1)?.id) ? tempWorkPackageRows?.at(-1)?.id + 1 : 1
+            const row = {
+                "id": id,
+                "name": pack.name,
+                "description": pack.description,
+                "duration": pack.duration,
+                'resources': pack.resources
+            }
+            databaseIDs[`${id}`] = pack.id
+            tempWorkPackageRows.push(row)
+        })
+        setWorkPackageRows(tempWorkPackageRows)
+    }
+
     useEffect(() => {
-        let temp = {}
-        if (JSON.stringify(state.subDeliverables) === "{}"){
-            temp = Object.entries(state.deliverables).map(elem => elem[0])
-        } else {
-            temp = Object.entries(state.subDeliverables).map(elem => elem[0])
-        }
-        setDeliverables(() => {return temp})
+        loadDeliverablesAndSubDeliverables()
+        loadWorkPackages()
     }, [])
 
     const [userState, setUserState] = useState( {
-        "index": 0
+        "index": 0,
+        name: "",
+        description: "",
+        resources: "",
+        duration: ""
     })
-    const [workpackages, setWorkpackages] = useState({})
 
-    const addWorkPackage = () => {
-        const workPackage = {
-            "duration": userState.duration,
+
+    const addWorkPackage = async () => {
+        if (userState.name === "" || userState.duration === "" || userState.resources === "") {return}
+        const row = {
+            "id": ((workPackageRows?.at(-1)?.id) ? workPackageRows?.at(-1)?.id + 1 : 1),
             "name": userState.name,
-            "resources": userState.resources,
-            "sources": null
-        }
-        setWorkpackages(prevState => { return {...prevState, [userState.name]: workPackage}})
-        setWorkPackageRows(prevState => {return prevState.concat([{
-            "id": ((prevState?.at(-1)?.id) ? prevState?.at(-1)?.id + 1 : 1),
-            "name": userState.name,
-            "add_desc": userState.add_desc,
-            "under_deliverable": deliverables[userState.index],
+            "description": userState.description,
             "duration": userState.duration,
             'resources': userState.resources
-        }])})
-        setUserState(prevState => {return {...prevState, ["name"]: "", ["resources"]: "", ["duration"]: "", ["add_desc"]: ""}})
+            }
+        const resp = await sendWorkPackageToDatabase(null, row)
+        if (resp?.id === undefined) {return}
+        setUserState(prevState => {
+            return {...prevState, ["name"]: "", ["resources"]: "", ["duration"]: "", ["description"]: ""}
+        })
+        setWorkPackageRows(prevState => {
+            return prevState.concat([row])
+        })
+    }
+
+    const sendWorkPackageToDatabase = async (id, row) => {
+        const databaseID = (databaseIDs[`${id}`]) ? databaseIDs[`${id}`] : ""
+        const workPackage = {
+            "duration": row.duration,
+            "description": row.description,
+            "name": row.name,
+            "resources": row.resources,
+        }
+        const temp_id = await client.postWorkPackage(databaseID, JSON.stringify(workPackage))
+        if (databaseID === "") {databaseIDs[`${id}`] = temp_id.id}
+        return temp_id
+    }
+    const updateWorkPackage = async (e) => {
+        const rowIndex = workPackageRows.findIndex(element => element.id === e.id)
+        workPackageRows[rowIndex][e.field] = e.value
+        await sendWorkPackageToDatabase(e.id, workPackageRows[rowIndex])
     }
     const [workPackageRows, setWorkPackageRows] = useState([])
     const workPackageColumns : GridColDef = [
         { field: 'id', headerName: 'ID', width: 70 },
-        { field: 'name', headerName: 'Work-package', width: 200 },
-        { field: 'under_deliverable', headerName: 'Connected to', width: 200 },
-        { field: 'duration', headerName: 'Duration', width: 100 },
-        { field: 'resources', headerName: 'Resources', width: 100 },
-        { field: 'add_desc', headerName: 'Description', width: 300 },
+        { field: 'name', headerName: 'Work-package', width: 200, editable: true },
+        { field: 'duration', headerName: 'Duration', width: 100, editable: true },
+        { field: 'resources', headerName: 'Resources', width: 100, editable: true },
+        { field: 'description', headerName: 'Description', width: 300, editable: true },
     ];
 
     const changeHandler = (e) => {
@@ -78,7 +132,7 @@ export default function ProjectWorkpackages() {
         <div className="deliverables__grid">
             <div className={"deliverables__grid_left"}>
                 <Typography className={"general__inner_element"} variant={"h5"}>
-                    Deliverable : {deliverables[userState.index]}
+                    Deliverable : {deliverablesAndSubDeliverables[userState.index]?.name}
                 </Typography>
                 <Typography className={"general__inner_element"}>
                     Break up your project deliverable into discrete work-packages
@@ -107,15 +161,15 @@ export default function ProjectWorkpackages() {
                 <TextInput
                     className={"general__text_input__large"}
                     label="Additional description - f.ex remember to document the process"
-                    name="add_desc"
-                    value={userState.add_desc}
+                    name="description"
+                    value={userState.description}
                     onChange={changeHandler}
                 />
 
                 <Button color="lightblue" label = "Add work-package" onClick={() => {
                     addWorkPackage()
                 }}/>
-                {userState.index < deliverables.length - 1 && <Button
+                {userState.index < deliverablesAndSubDeliverables.length - 1 && <Button
                     label={"Next deliverable"}
                     onClick={() => setUserState(prevState => {return {...prevState, ["index"]: prevState.index + 1}})}
                 />}
@@ -123,7 +177,7 @@ export default function ProjectWorkpackages() {
                     label={"Previous deliverable"}
                     onClick={() => setUserState(prevState => {return {...prevState, ["index"]: prevState.index - 1}})}
                 />}
-                {userState.index === deliverables.length - 1 && <Button
+                {userState.index === deliverablesAndSubDeliverables.length - 1 && <Button
                     label={"Continue to time planning"}
                     onClick={() => setUserState(prevState => {return {...prevState, ["index"]: prevState.index + 1}})}
                 />}
@@ -133,6 +187,7 @@ export default function ProjectWorkpackages() {
                 <div className={"deliverables__tables"}>
                     <DataGrid
                         rows={workPackageRows}
+                        onCellEditCommit={e => updateWorkPackage(e)}
                         columns={workPackageColumns}
                     />
                 </div>

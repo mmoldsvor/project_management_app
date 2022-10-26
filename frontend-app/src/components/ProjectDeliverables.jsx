@@ -9,8 +9,8 @@ import "../styles/Deliverables.scss"
 import Button from "./Button"
 import TextInput from "./TextInput"
 import {client} from "./App"
-const databaseIDs = {}
 
+const databaseIDs = {}
 export default function ProjectDeliverables() {
     const navigate = useNavigate()
     const [userState, setUserState] = useState({
