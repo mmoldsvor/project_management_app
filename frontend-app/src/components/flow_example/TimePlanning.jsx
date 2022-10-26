@@ -65,55 +65,69 @@ const defaultEdgeOptions = {
     labelStyle: {fontsize: "26"}
 };
 
-// const idToNames = {}
-// const idToDatabaseIDs = {}
+const nameToId = {}
+const idToDatabaseIDs = {}
+const flowKey = 'timeplanning-flow';
 
 const TimePlanning = () => {
     const [nodes, setNodes, onNodesChange] = useNodesState([]);
     const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
 
-    const createNodes = (workPackages) => {
+    const createNodes = async () => {
+        const response = await client.fetchWorkPackages()
+        const workPackages = response?.work_packages
         let x_pos = 50;
         let y_pos = 80;
-
         const tempNodes = workPackages.map((pack) => {
-            console.log(pack?.id)
-            x_pos = x_pos + 20
-            // idToNames[`${pack?.id}`] = pack?.name
+            x_pos = x_pos + 50
+            nameToId[`${pack?.name}`] = pack?.id
             return {
-                id: pack.name,
+                id: `${pack.name}`,
                 type: 'custom',
-                data: {label: pack?.name, duration: pack?.duration},
+                data: {label: pack?.name, duration: pack?.duration, description: pack?.description},
                 position: { x: x_pos, y: y_pos }
             }
         })
         setNodes(tempNodes)
+        await loadFromDatabase()
     }
-    useEffect(() => createNodes(work_packages_example), [])
 
-    // const sendToDatabase = async (source, target, relation, duration) => {
-    //     const id = (idToDatabaseIDs[`${source}${target}`]) ? idToDatabaseIDs[`${source}${target}`] : ""
-    //     const data = {
-    //         source: source,
-    //         taget: target,
-    //         relation: relation,
-    //         duration: duration
-    //     }
-    //     const dataBaseId = await client.postRelation(id, JSON.stringify(data))
-    //     if (dataBaseId !== id){idToDatabaseIDs[`${source}${target}`] = dataBaseId}
-    // }
-    //
-    // const loadFromDatabase = async() => {
-    //     const relations = await client.fetchRelations()
-    //     const tempEges = relations?.relations.map((relation) => {
-    //
-    //
-    //     })
-    // }
+    useEffect(() => {
+        createNodes()
+        }, [])
 
-    const onConnect = useCallback((params) => {
-        setEdges((eds) => addEdge(params, eds))
-    },  [setEdges])
+    const sendToDatabase = async (source, target, relation, duration) => {
+        const id = (idToDatabaseIDs[`${source}${target}`]) ? idToDatabaseIDs[`${source}${target}`] : ""
+        const data = JSON.stringify({
+            source: source,
+            target: target,
+            relation: relation,
+            duration: parseInt(duration)
+        })
+        const dataBaseId = await client.postRelation(id, data)
+        if (dataBaseId !== id){idToDatabaseIDs[`${source}${target}`] = dataBaseId.id}
+    }
+
+    const loadFromDatabase = async() => {
+        const relations = await client.fetchRelations()
+        relations?.relations.forEach((relation) => {
+            idToDatabaseIDs[`${relation.source}${relation.target}`] = relation.id
+        })
+    }
+
+    const onConnect = useCallback((edge) => {
+        setEdges((eds) => {
+            const index = edges.findIndex(edg => {
+                return (edg.target === edge.target && edg.source === edge.source)
+            })
+            if (index === -1) {
+                return eds.concat([edge])
+            }
+            else {
+                eds[index] = edge
+                return eds
+            }
+        }, )},  [setEdges])
 
     const [open, setOpen] = useState(false);
     const [selectedValue, setSelectedValue] = useState();
@@ -128,7 +142,7 @@ const TimePlanning = () => {
         setOpen(false)
         // sendToDatabase(newEdge?.source, newEdge?.target, relation, duration)
         newEdge.label = `${relation} (${duration})`
-        console.log(edges)
+        sendToDatabase(nameToId[`${newEdge.source}`], nameToId[`${newEdge.target}`], relation, duration)
         onConnect(newEdge)
         // console.log(newEdge)
     }
@@ -139,6 +153,7 @@ const TimePlanning = () => {
         setOpen(true);
     }
 
+    const [rfInstance, setRfInstance] = useState(null);
     const [source, setSource] = useState("")
     const [target, setTarget] = useState("")
     const [newEdge, setNewEdge] = useState()
@@ -146,6 +161,15 @@ const TimePlanning = () => {
         (oldEdge, newConnection) => setEdges((els) => updateEdge(oldEdge, newConnection, els)),
         []
     );
+
+    const onSave = useCallback(() => {
+
+        if (rfInstance) {
+            console.log("Hello")
+            const flow = rfInstance.toObject();
+            localStorage.setItem(flowKey, JSON.stringify(flow));
+        }
+    }, [rfInstance]);
 
     return (
         <div className="relations__outer">
@@ -167,15 +191,17 @@ const TimePlanning = () => {
                     onNodesChange={onNodesChange}
                     onEdgesChange={onEdgesChange}
                     onConnect={handleConnect}
-                    onSelectionChange={e => console.log(e)}
                     onEdgeUpdate={onEdgeUpdate}
                     nodeTypes={nodeTypes}
                     edgeTypes={edgeTypes}
                     defaultEdgeOptions={defaultEdgeOptions}
                     connectionLineComponent={CustomConnectionLine}
                     connectionLineStyle={connectionLineStyle}
+                    onInit={setRfInstance}
+                    onNodeDoubleClick={onSave}
                 />
             </div>
+
         </div>
     );
 };

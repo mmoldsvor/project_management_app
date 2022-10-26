@@ -21,6 +21,6 @@ export const AppRoutes = (
         <Route key="work-packages" path="/work-packages" element={<ProjectWorkpackages/>} />
         <Route key="new-project" path="/new-project" element={<CreateProject/>} />
         <Route key="projects-overview" path="/projects" element={<ProjectsOverview/>} />
-        <Route key="flow" path="/flow" element={<TimePlanning/>}/>
+        <Route key="flow" path="/time-planning" element={<TimePlanning/>}/>
     </Routes>
 );

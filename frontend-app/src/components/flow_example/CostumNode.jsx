@@ -1,4 +1,5 @@
 import { Handle, Position, useStore } from 'reactflow';
+import {Typography} from "@mui/material";
 
 const connectionNodeIdSelector = (state) => state.connectionNodeId;
 
@@ -30,7 +31,12 @@ export default function CustomNode(props) {
                     position={Position.Left}
                     type="target"
                 />
-                {props.data?.label}
+                <Typography className="customNodeBody__inner_text" variant={"h6"}>
+                    {props.data?.label} ({props?.data.duration})
+                </Typography>
+                <Typography className="customNodeBody__inner_description" variant={"body1"}>
+                    {props.data?.description}
+                </Typography>
             </div>
         </div>
     );
