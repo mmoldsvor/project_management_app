@@ -173,6 +173,7 @@ const TimePlanning = () => {
 
     return (
         <div className="relations__outer">
+            <Typography style={{"margin-left": "50px"}} variant={"h3"}>Time planning</Typography>
             <div style={{
                 height: window.innerHeight,
                 width: "98%"
