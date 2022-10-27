@@ -14,7 +14,7 @@ from utility.deliverable_utils import work_package_in_project, get_connected_sub
 
 work_package_api = Blueprint('work_package_api', __name__)
 
-@work_package_api.route('/project/<project_id>/work_package', methods=['POST'])
+@work_package_api.route('/api/project/<project_id>/work_package', methods=['POST'])
 @auth_required
 def create_work_package(jwt_data, project_id):
     if not has_project_access(jwt_data['uuid'], project_id):
@@ -50,7 +50,7 @@ def create_work_package(jwt_data, project_id):
     return {'id': work_package.id}, 200
 
 
-@work_package_api.route('/project/<project_id>/work_packages/', methods=['GET'])
+@work_package_api.route('/api/project/<project_id>/work_packages/', methods=['GET'])
 @auth_required
 def list_work_packages(jwt_data, project_id):
     if not has_project_access(jwt_data['uuid'], project_id):
@@ -79,7 +79,7 @@ def list_work_packages(jwt_data, project_id):
     return {'work_packages': work_packages}, 200
 
 
-@work_package_api.route('/project/<project_id>/work_package/<work_package_id>', methods=['GET', 'DELETE', 'POST'])
+@work_package_api.route('/api/project/<project_id>/work_package/<work_package_id>', methods=['GET', 'DELETE', 'POST'])
 @auth_required
 def work_package(jwt_data, project_id, work_package_id):
     if not has_project_access(jwt_data['uuid'], project_id):
@@ -130,7 +130,7 @@ def work_package(jwt_data, project_id, work_package_id):
     return {'work_package': work_package_output_schema.dump(work_package_dict)}, 200
 
 
-@work_package_api.route('/project/<project_id>/relation/', methods=['POST'])
+@work_package_api.route('/api/project/<project_id>/relation/', methods=['POST'])
 @auth_required
 def create_relation(jwt_data, project_id):
     if not has_project_access(jwt_data['uuid'], project_id):
@@ -152,7 +152,7 @@ def create_relation(jwt_data, project_id):
     
     return {'id': str(relation.id)}, 200 
 
-@work_package_api.route('/project/<project_id>/relations', methods=['GET', 'DELETE'])
+@work_package_api.route('/api/project/<project_id>/relations', methods=['GET', 'DELETE'])
 @auth_required
 def list_work_package_relations(jwt_data, project_id):
     if not has_project_access(jwt_data['uuid'], project_id):
@@ -178,7 +178,7 @@ def list_work_package_relations(jwt_data, project_id):
     return {'relations': relations}, 200
 
 
-@work_package_api.route('/project/<project_id>/relation/<relation_id>', methods=['GET', 'DELETE', 'POST'])
+@work_package_api.route('/api/project/<project_id>/relation/<relation_id>', methods=['GET', 'DELETE', 'POST'])
 @auth_required
 def work_package_relation(jwt_data, project_id, relation_id):
     if not has_project_access(jwt_data['uuid'], project_id):
@@ -213,7 +213,7 @@ def work_package_relation(jwt_data, project_id, relation_id):
     
     return {'relation': work_package_relation_output_schema.dump(model_to_dict(relation))}, 200
 
-@work_package_api.route('/project/<project_id>/nodes', methods=['GET', 'POST'])
+@work_package_api.route('/api/project/<project_id>/nodes', methods=['GET', 'POST'])
 @auth_required
 def node_information(jwt_data, project_id):
     if not has_project_access(jwt_data['uuid'], project_id):

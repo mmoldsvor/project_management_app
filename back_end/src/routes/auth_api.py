@@ -9,7 +9,7 @@ from database_models import UserTable
 auth_api = Blueprint('auth_api', __name__)
 
 
-@auth_api.route('/create_account', methods=['POST'])
+@auth_api.route('/api/create_account', methods=['POST'])
 def create_account():
     try:
         data = account_creation_schema.load(request.get_json())
@@ -27,7 +27,7 @@ def create_account():
     return {'message': 'User created'}, 200 
 
 
-@auth_api.route('/authenticate', methods=['POST'])
+@auth_api.route('/api/authenticate', methods=['POST'])
 def authenticate():
     try:
         data = authentication_schema.load(request.get_json())
