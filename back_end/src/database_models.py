@@ -1,6 +1,7 @@
 import os
 import uuid
 from peewee import *
+from playhouse.postgres_ext import *
 
 
 database_name = os.getenv('DATABASE_NAME', default='postgres')
@@ -72,6 +73,11 @@ class WorkPackageRelationTable(BaseModel):
 
     project = ForeignKeyField(ProjectTable)
 
+class WorkPackageNodeTable(BaseModel):
+    node = BinaryJSONField()
+
+    project = ForeignKeyField(ProjectTable)
+
 
 def create_tables():
     with database:
@@ -84,7 +90,8 @@ def create_tables():
             WorkPackageTable,
             SubdeliverableWorkPackageTable,
             DeliverableWorkPackageTable,
-            WorkPackageRelationTable
+            WorkPackageRelationTable,
+            WorkPackageNodeTable
         ])
 
 def drop_tables():
@@ -98,6 +105,7 @@ def drop_tables():
             WorkPackageTable,
             SubdeliverableWorkPackageTable,
             DeliverableWorkPackageTable,
-            WorkPackageRelationTable
+            WorkPackageRelationTable,
+            WorkPackageNodeTable
         ],
         cascade=True)

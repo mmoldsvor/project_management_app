@@ -1,3 +1,5 @@
+import json
+
 from flask import request, Blueprint
 from marshmallow import ValidationError
 from peewee import DoesNotExist
@@ -5,7 +7,7 @@ from playhouse.shortcuts import model_to_dict
 
 from auth import auth_required
 from schemas import work_package_input_schema, work_package_output_schema, work_package_relation_output_schema, work_package_relation_input_schema
-from database_models import WorkPackageTable, DeliverableWorkPackageTable, SubdeliverableWorkPackageTable, WorkPackageRelationTable
+from database_models import database, WorkPackageTable, DeliverableWorkPackageTable, SubdeliverableWorkPackageTable, WorkPackageRelationTable, WorkPackageNodeTable
 
 from utility.auth_utils import has_project_access
 from utility.deliverable_utils import work_package_in_project, get_connected_subdeliverable, get_connected_deliverable
@@ -23,23 +25,27 @@ def create_work_package(jwt_data, project_id):
     except ValidationError as err:
         return {'errors': err.messages}, 422
 
-    work_package_data = {key: value for key, value in data.items() if key not in ('deliverable_id', 'subdeliverable_id')}
-    work_package = WorkPackageTable.create(
-        **work_package_data,
-        project=project_id
-    )
+    with database.atomic() as transaction:
+        try:
+            work_package_data = {key: value for key, value in data.items() if key not in ('deliverable_id', 'subdeliverable_id')}
+            work_package = WorkPackageTable.create(
+                **work_package_data,
+                project=project_id
+            )
 
-    if 'deliverable_id' in data:
-        DeliverableWorkPackageTable.create(
-            deliverable=data['deliverable_id'],
-            work_package=work_package.id
-        )
-    elif 'subdeliverable_id' in data:
-        SubdeliverableWorkPackageTable.create(
-            subdeliverable=data['subdeliverable_id'],
-            work_package=work_package.id
-        )
-
+            if 'deliverable_id' in data:
+                DeliverableWorkPackageTable.create(
+                    deliverable=data['deliverable_id'],
+                    work_package=work_package.id
+                )
+            elif 'subdeliverable_id' in data:
+                SubdeliverableWorkPackageTable.create(
+                    subdeliverable=data['subdeliverable_id'],
+                    work_package=work_package.id
+                )
+        except:
+            transaction.rollback()
+            return {'errors': 'Deliverable or subdeliverable does not exist'}
 
     return {'id': work_package.id}, 200
 
@@ -90,7 +96,16 @@ def work_package(jwt_data, project_id, work_package_id):
         except ValidationError as err:
             return {'errors': err.messages}, 422
         
-        WorkPackageTable.update(**data).where(work_package_condition).execute()
+        work_package_data = {key: value for key, value in data.items() if key not in ('deliverable_id', 'subdeliverable_id')}
+        
+        WorkPackageTable.update(
+            **work_package_data
+        ).where(
+            work_package_condition
+        ).execute()
+
+        # Update deliverable/subdeliverable table as well
+
         return {'message': 'Work package was updated'}, 200
 
     try:
@@ -137,18 +152,25 @@ def create_relation(jwt_data, project_id):
     
     return {'id': str(relation.id)}, 200 
 
-@work_package_api.route('/project/<project_id>/relations', methods=['GET'])
+@work_package_api.route('/project/<project_id>/relations', methods=['GET', 'DELETE'])
 @auth_required
 def list_work_package_relations(jwt_data, project_id):
     if not has_project_access(jwt_data['uuid'], project_id):
         return {'errors': 'You do not have access to this project'}, 401
 
+    if request.method == 'DELETE':
+        WorkPackageRelationTable.delete().where(
+            WorkPackageRelationTable.project == project_id
+        ).execute()
+
+        return {'message': 'Relations successfully deleted'}, 200
+    
     relation_query = WorkPackageRelationTable.select(
         WorkPackageRelationTable
     ).where(
         WorkPackageRelationTable.project == project_id
     )
-
+    
     relations = []
     for relation in relation_query:
         relations.append(work_package_relation_output_schema.dump(relation))
@@ -190,3 +212,27 @@ def work_package_relation(jwt_data, project_id, relation_id):
         return {'errors': 'Relation was deleted'}, 200
     
     return {'relation': work_package_relation_output_schema.dump(model_to_dict(relation))}, 200
+
+@work_package_api.route('/project/<project_id>/nodes', methods=['GET', 'POST'])
+@auth_required
+def node_information(jwt_data, project_id):
+    if not has_project_access(jwt_data['uuid'], project_id):
+        return {'errors': 'You do not have access to this project'}, 401
+
+    data = request.get_json()
+    try:
+        value = WorkPackageNodeTable.get(project=project_id)
+        if request.method == 'POST':
+            WorkPackageNodeTable.update(
+                node=json.dumps(data)
+            ).where(
+                WorkPackageNodeTable.project==project_id
+            ).execute()
+            return {'message': 'Node update was successful'}, 200
+        return json.loads(value.node), 200
+    except DoesNotExist:
+        WorkPackageNodeTable.create(
+            node=json.dumps(data),
+            project=project_id
+        )
+        return {'message': 'Node creation was successful'}, 200
