@@ -1,6 +1,6 @@
 import React, {useCallback, useEffect, useState} from 'react';
 
-import ReactFlow, {addEdge, useNodesState, useEdgesState, MarkerType, updateEdge} from 'reactflow';
+import ReactFlow, {addEdge, useNodesState, useEdgesState, MarkerType, updateEdge, useReactFlow} from 'reactflow';
 
 import CustomNode from './CostumNode';
 import FloatingEdge from './FloatingEdge';
@@ -10,37 +10,21 @@ import "../../styles/Relations.scss"
 import 'reactflow/dist/style.css';
 import './style.css';
 import TextInput from "../TextInput";
-import {Typography} from "@mui/material";
+import {FormLabel, Typography} from "@mui/material";
 import Button from "../Button";
 import SimpleDialog from "./SimpleDialog";
 import RelationsDialog from "./SimpleDialog";
 import {client} from "../App";
+import InfoDrawer from "../Drawer";
 
-const work_packages_example = [
-    {
-        name: "test1",
-        id: "1",
-        duration: "2"
-    },
-    {
-        name: "test2",
-        id: "2",
-        duration: "2"
-    },
-    {
-        name: "test3",
-        id: "3",
-        duration: "2"
-    },
-    {
-        name: "test4",
-        id: "4",
-        duration: "2"
-    }
-]
+const infoText = `Finish to start: task B can only start when task A is done
+Finish to finish: task B cannot be completed as long as task A is not done
+Start to start: task B cannot be initiated as long as task A has not started
+Start to finish: the beginning of task A coincides with the end of task B [notes in class]
+
+Between two task a delayed on relation can be added, for example F(2) between a finish to start would mean that project B starts 2 days after project A is done.`
 
 const initialEdges = [];
-
 const connectionLineStyle = {
     strokeWidth: 3,
     stroke: 'black',
@@ -140,12 +124,12 @@ const TimePlanning = () => {
 
     const handleSave = (relation : string, duration : string) => {
         setOpen(false)
-        // sendToDatabase(newEdge?.source, newEdge?.target, relation, duration)
         newEdge.label = `${relation} (${duration})`
         sendToDatabase(nameToId[`${newEdge.source}`], nameToId[`${newEdge.target}`], relation, duration)
         onConnect(newEdge)
-        // console.log(newEdge)
+        saveFlow()
     }
+
     const handleConnect = (e) => {
         setNewEdge(e)
         setTarget(e.target)
@@ -162,18 +146,35 @@ const TimePlanning = () => {
         []
     );
 
-    const onSave = useCallback(() => {
-
+    const saveFlow = async () => {
         if (rfInstance) {
-            console.log("Hello")
             const flow = rfInstance.toObject();
-            localStorage.setItem(flowKey, JSON.stringify(flow));
+            const clientResponse = await client.postTimePlanning(JSON.stringify(flow))
+            console.log(clientResponse)
         }
-    }, [rfInstance]);
+    }
+
+    const restoreFlow = async () => {
+        const flow = JSON.parse(await client.fetchTimePlanning())
+        console.log(flow)
+        if (flow) {
+            const { x = 0, y = 0, zoom = 1 } = flow.viewport;
+            setNodes(flow.nodes || []);
+            setEdges(flow.edges || []);
+        }
+    }
+
 
     return (
         <div className="relations__outer">
-            <Typography style={{"margin-left": "50px"}} variant={"h3"}>Time planning</Typography>
+
+            <div className={"infoGrid"}>
+                <Typography style={{"margin-left": "50px"}} variant={"h3"}>Time planning</Typography>
+                <InfoDrawer
+                    title={"Time planning"}
+                    info_text={infoText}
+                />
+            </div>
             <div style={{
                 height: window.innerHeight,
                 width: "98%"
@@ -199,7 +200,7 @@ const TimePlanning = () => {
                     connectionLineComponent={CustomConnectionLine}
                     connectionLineStyle={connectionLineStyle}
                     onInit={setRfInstance}
-                    onNodeDoubleClick={onSave}
+                    onNodeDoubleClick={restoreFlow}
                 />
             </div>
 

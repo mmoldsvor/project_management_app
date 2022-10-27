@@ -9,6 +9,7 @@ import Button from "./Button";
 import TextInput from "./TextInput";
 import {DataGrid, GridColDef} from "@mui/x-data-grid";
 import {client} from "./App";
+import InfoDrawer from "./Drawer";
 
 const testObject = {
     "deliverables": {
@@ -20,6 +21,19 @@ const testObject = {
     "projectGoal": "Making a working web-application"
 }
 
+const infoText = `Work package: the work packages are a special form of components that have the following characteristics [4]:
+    • Forms lowest level in WBS*.
+    • Must have a deliverable result.
+    • It has one owner. 
+    • It may be considered by its owner as a project in itself. 
+    • It may include several milestones. 
+    • A work package should fit organizational procedures and culture. 
+    • The optimal size may be expressed in terms on labour hours, calendar time, cost, reporting period, and risks.
+
+Warning: Work packages should not be too small as to make cost of control excessive and not so large as to make the risk unacceptable.
+*WBS: Work Breakdown Structures is a hierarchical decomposition of the work to be executed by the project team in order to accomplish the project objectives and create the required deliverables [3]
+Resources: a stock or supply of money, materials, staff, and other assets that can be drawn on by a person or organization in order to function effectively [5].
+Time: the duration of your work package for instance hours, days, weeks, etc. `
 
 
 const databaseIDs = {}
@@ -137,6 +151,10 @@ export default function ProjectWorkpackages() {
                 <Typography className={"general__inner_element"}>
                     Break up your project deliverable into discrete work-packages
                 </Typography>
+                <InfoDrawer
+                    title={"Work-packages"}
+                    info_text={infoText}
+                />
                 <TextInput
                     className={"general__text_input"}
                     label="Work-package name - f.ex: Fix necessary firewall permissions"

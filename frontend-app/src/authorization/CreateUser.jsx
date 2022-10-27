@@ -55,12 +55,14 @@ export default function CreateUser(){
             <TextInput
                 label={"Password"}
                 name="password"
+                type={"password"}
                 value={state.password}
                 onChange={changeHandler}
             />
             <TextInput
                 label={"Repeat password"}
                 name="password_duplicate"
+                type={"password"}
                 value={duplicatePassword}
                 onChange={(e) => setDuplicatePassword(e.target.value)}
                 onKeyDown={(e) => {if(e.key ==="Enter"){createUser()}}}

@@ -50,7 +50,7 @@ export default function Header(){
             {/*        onClick={() => navigate("/login")}*/}
             {/*    />}*/}
             {/*</div>*/}
-            <div className={"header__mid"}/>
+
 
         </div>
     )
