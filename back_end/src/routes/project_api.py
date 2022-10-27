@@ -15,7 +15,7 @@ from utility.deliverable_utils import get_deliverable_list
 project_api = Blueprint('project_api', __name__)
 
 
-@project_api.route('/project', methods=['POST'])
+@project_api.route('/api/project', methods=['POST'])
 @auth_required
 def create_project(jwt_data):
     try:
@@ -29,7 +29,7 @@ def create_project(jwt_data):
     return {'id': str(project.project_id)}, 201
 
 
-@project_api.route('/project/<project_id>', methods=['GET', 'DELETE', 'POST'])
+@project_api.route('/api/project/<project_id>', methods=['GET', 'DELETE', 'POST'])
 @auth_required
 def get_project(jwt_data, project_id):
     if not has_project_access(jwt_data['uuid'], project_id):
@@ -61,7 +61,7 @@ def get_project(jwt_data, project_id):
     return {'project': project_output_schema.dump(project_dict)}, 200
 
 
-@project_api.route('/projects', methods=['GET'])
+@project_api.route('/api/projects', methods=['GET'])
 @auth_required
 def list_projects(jwt_data):
     project_owner_query = ProjectOwnerTable.select(

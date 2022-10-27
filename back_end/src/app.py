@@ -37,23 +37,4 @@ def after_request(response):
     database.close()
     return response
 
-
-@app.route('/', methods=['GET'])
-@auth_required
-def index(jwt_data):
-    return jwt_data
-    
-
-@app.route('/data_test', methods=['POST'])
-def data_test():
-    try:
-        data = test_schema.load(request.get_json())
-    except ValidationError as err:
-        return {'errors': err.messages}, 422
-
-    result = test_schema.dump(data)
-
-    return result
-
-
 app.run(host='0.0.0.0')
