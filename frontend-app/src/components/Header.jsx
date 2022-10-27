@@ -11,6 +11,7 @@ import {useNavigate} from "react-router-dom";
 export default function Header(){
     const loggedIn = isLoggedIn()
     const navigate = useNavigate()
+    const selected_project = localStorage.getItem("selected_project-id")
     return (
         <div className={"header"}>
             <div>
@@ -32,24 +33,25 @@ export default function Header(){
                 />}
             </div>
             {loggedIn && <div className={"header__deliverables"}>
-                {/*<div className={"header__text"}> Hello </div>*/}
-                <Button className={"header__button"} label={"Deliverables"} onClick={() => navigate("/deliverables")}/>
-                <Button className={"header__button"} label={"Workpackages"} onClick={() => {}}/>
-                <Button
+                {selected_project === null && <Button className={"header__button"} label={"Projects"} onClick={() => navigate("/projects")}/>}
+                {selected_project !== null && <Button className={"header__button"} label={"Deliverables"} onClick={() => navigate("/deliverables")}/>}
+                {selected_project !== null && <Button className={"header__button"} label={"Work-packages"} onClick={() => navigate("/work-packages")}/>}
+                {selected_project !== null &&  <Button className={"header__button"} label={"Time-planning"} onClick={() => navigate("/time-planning")}/>}
+                {selected_project !== null && <Button
                     className='header__button'
                     label={"New Project"}
                     onClick={() => navigate("/new-project")}
-                />
+                    />}
             </div>}
-            <div className={"header__mid"}/>
-            <div className={"header__start"}>
+            {/*<div className={"header__start"}>*/}
+            {/*    {!loggedIn && <Button*/}
+            {/*        className='header__button'*/}
+            {/*        label={"Get Started"}*/}
+            {/*        onClick={() => navigate("/login")}*/}
+            {/*    />}*/}
+            {/*</div>*/}
 
-                {!loggedIn && <Button
-                    className='header__button'
-                    label={"Get Started"}
-                    onClick={() => navigate("/login")}
-                />}
-            </div>
+
         </div>
     )
 }

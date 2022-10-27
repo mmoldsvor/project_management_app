@@ -5,9 +5,17 @@
 .drawer__content{
   padding-left: 20px;
   padding-right: 20px;
-  padding-top: 20px;
 }
 
-.drawer__button{
-  color: darkred;
+.drawer__button {
+  margin-left: 10px;
+}
+
+.pre {
+  white-space: pre-wrap;       /* Since CSS 2.1 */
+  white-space: -moz-pre-wrap;  /* Mozilla, since 1999 */   /* Opera 4-6 */
+  white-space: -o-pre-wrap;    /* Opera 7 */
+  word-wrap: break-word;       /* Internet Explorer 5.5+ */
+  padding-left: 20px;
+  padding-right: 20px;
 }

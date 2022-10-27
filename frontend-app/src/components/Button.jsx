@@ -4,7 +4,7 @@ export default function Button(props){
             <button className={props?.className ? props?.className : "general__button"}
                     type={"button"}
                     {...props}
-                    style={{"background-color": props?.color}}
+                    style={{"background-color": props?.color, "width": props?.width}}
             >
                 {props?.label}
             </button>

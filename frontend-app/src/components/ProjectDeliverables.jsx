@@ -9,8 +9,14 @@ import "../styles/Deliverables.scss"
 import Button from "./Button"
 import TextInput from "./TextInput"
 import {client} from "./App"
-const databaseIDs = {}
+import InfoDrawer from "./Drawer";
 
+const infoText = `A project should be broken into smaller deliverables to help visualize the work, improve communication, and assign responsibilities, differentiate external and internal work and reduce the complexity of the project
+Deliverable: a project is divided in different major components, each of these components is called a deliverable. These deliverables refer to all the outputs of the project (tangible and intangible) and it refers to any project-related output summited during any phase of the project [1].
+Subdeliverable: supporting deliverable, they are smaller components of the project that can be seen as “part of” the main deliverables [2,3].
+`
+
+const databaseIDs = {}
 export default function ProjectDeliverables() {
     const navigate = useNavigate()
     const [userState, setUserState] = useState({
@@ -57,7 +63,6 @@ export default function ProjectDeliverables() {
         setDeliverables(tempDeliverables)
     }
     useEffect(() => {
-
         loadProjectInfo()
     }, [])
 
@@ -234,6 +239,11 @@ function Deliverables(props){
             <Typography className={"general__inner_element"}>
                 Break up your project goal into deliverables
             </Typography>
+            <InfoDrawer
+                title={"Deliverables and subdeliverables"}
+                info_text = {infoText}
+            />
+
             <TextInput
                 className={"general__text_input"}
                 label="Deliverable name - f.ex: Create a backendserver"
@@ -279,6 +289,10 @@ function SubDeliverables(props){
             <Typography>
                 Break up your deliverables into sub-deliverables
             </Typography>
+            <InfoDrawer
+                title={"Deliverables and subdeliverables"}
+                info_text = {infoText}
+            />
             <br/>
             <Typography variant={"h6"}>
                 {props.deliverableRows.at(index)?.name}

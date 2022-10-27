@@ -35,9 +35,10 @@
 .header__login{
   @extend .header__button;
   margin-top: 30px;
-  text-align: right;
+  margin-right: 100px;
   font-size: large;
   font-weight: bolder;
+  padding: 10px 20px;
   }
 
 .header__mid{
@@ -48,10 +49,13 @@
 
 .header__start{
   grid-column: 6;
-  padding-top: 30px;
-  //background-color: rgb(201, 45, 201);
-  //grid-row: 4;
-  color: rgb(13, 0, 0);
+  text-align: right;
+  align-content: center;
+  grid-row: 1;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  grid-column-gap: 10px;
+  padding-top: 10px;
 }
 
 .header__deliverables{
@@ -60,19 +64,19 @@
   align-content: center;
   grid-row: 1;
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(4, 1fr);
   grid-column-gap: 10px;
   padding-top: 10px;
 }
 
 .header__button{
-  padding: 10px 30px;
+  padding: 5px 10px;
   border-color: rgb(13, 0, 0) ;
   border-width:3px;
   border-style: solid ;
   border-radius: 10px;
   background-color:rgb(148, 225, 140) ;
-  font-size: large;
+  font-size: medium;
   cursor: pointer;
   white-space: nowrap;
 }
