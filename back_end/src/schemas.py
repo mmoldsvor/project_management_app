@@ -59,6 +59,7 @@ class ProjectSchema(Schema):
     name = fields.Str(required=True)
     project_type = fields.Str(missing='')
     description = fields.Str(missing='')
+    deliverable_only = fields.Boolean(missing=False)
 
     deliverables = fields.List(fields.Nested(DeliverableSchema))
 
