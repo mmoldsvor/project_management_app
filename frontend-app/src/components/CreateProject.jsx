@@ -17,8 +17,10 @@ export default function CreateProject(){
     const navigate = useNavigate()
     const createProject = async () => {
         const data = JSON.stringify(state)
-        const response = await client.createProject(data)
-        console.log(response)
+        const projectId = await client.createProject(data)
+        console.log(projectId)
+        localStorage.setItem("selected_project-id", projectId)
+        // navigate("/deliverables")
     }
     const [state, setState] = useState({
         "name": "",

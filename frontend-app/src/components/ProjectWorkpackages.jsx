@@ -92,6 +92,7 @@ export default function ProjectWorkpackages() {
 
 
     const addWorkPackage = async () => {
+
         if (userState.name === "" || userState.duration === "" || userState.resources === "") {return}
         const row = {
             "id": ((workPackageRows?.at(-1)?.id) ? workPackageRows?.at(-1)?.id + 1 : 1),
@@ -100,18 +101,19 @@ export default function ProjectWorkpackages() {
             "duration": userState.duration,
             'resources': userState.resources
             }
-        const resp = await sendWorkPackageToDatabase(null, row)
+
+        const resp = await sendWorkPackageToDatabase(undefined, row)
+        console.log(resp)
         if (resp?.id === undefined) {return}
         setUserState(prevState => {
             return {...prevState, ["name"]: "", ["resources"]: "", ["duration"]: "", ["description"]: ""}
         })
-        setWorkPackageRows(prevState => {
-            return prevState.concat([row])
-        })
+        const newRows = workPackageRows.concat([row])
+        setWorkPackageRows(prevState => newRows)
     }
 
     const sendWorkPackageToDatabase = async (id, row) => {
-        const databaseID = (databaseIDs[`${id}`]) ? databaseIDs[`${id}`] : ""
+        const databaseID = (id !== undefined && databaseIDs[`${id}`]) ? databaseIDs[`${id}`] : ""
         const workPackage = {
             "duration": row.duration,
             "description": row.description,
@@ -195,10 +197,10 @@ export default function ProjectWorkpackages() {
                     label={"Previous deliverable"}
                     onClick={() => setUserState(prevState => {return {...prevState, ["index"]: prevState.index - 1}})}
                 />}
-                {userState.index === deliverablesAndSubDeliverables.length - 1 && <Button
+                <Button
                     label={"Continue to time planning"}
-                    onClick={() => setUserState(prevState => {return {...prevState, ["index"]: prevState.index + 1}})}
-                />}
+                    onClick={() => navigate("/time-planning")}
+                />
             </div>
             <div className={"deliverables__grid_right"}>
                 <Typography className={"general__inner_element"} variant={"h5"}>Work-Packages</Typography>

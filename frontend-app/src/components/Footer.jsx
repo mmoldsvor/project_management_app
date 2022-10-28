@@ -9,21 +9,11 @@ export default function Footer(){
             <div className={"footer__logo"}>
                 Copyright <span>&#169;</span> Your Project Planner 2022
             </div>
+            <Typography className={"footer__navn"}>
+                {/*Grytdal, Jonas K. - Kvande, Sindre - Mignot, Ines - Moldsvor, Martin M. - Orrem, Elias S. O. - Solvang, Sofia A. V.*/}
+                Grytdal, Kvande, Mignot, Moldsvor, Orrem, Solvang
+            </Typography>
 
-            <div className={"footer__navn1"}>
-                Made by: <br/>
-                Grytdal, Jonas K. <br/>  
-                Kvande, Sindre <br/>
-                Mignot, Ines <br/>
-
-            </div>
-
-            <div className={"footer__navn"}>
-                Moldsvor, Martin M. <br/>
-                Orrem, Elias S. O.<br/>
-                Solvang, Sofia A. V.
-                  
-            </div>
         </div>
     )
 }

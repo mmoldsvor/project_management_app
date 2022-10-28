@@ -1,6 +1,6 @@
 import {checkToken} from "../authorization/authorization";
 
-const ourURL = "/api"
+const ourURL = ""
 export default class OurClient {
 
     constructor(baseUrl) {
@@ -183,7 +183,20 @@ export default class OurClient {
     async fetchTimePlanning(){
         const token = checkToken()
         const project_id = this.getProjectId()
-        const url = new URL(`${ourURL}/project/${project_id}/nodes`, this.baseUrl)
+        const url = new URL(`${ourURL}/project/${project_id}/nodes`,this.baseUrl)
+        const resp = await fetch(url, {
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": "Bearer " + token
+            }
+        });
+        return handleResponse(resp);
+    }
+
+    async fetchTimeSchedule(){
+        const token = checkToken()
+        const project_id = this.getProjectId()
+        const url = new URL(`${ourURL}/project/${project_id}/time_schedule`,this.baseUrl)
         const resp = await fetch(url, {
             headers: {
                 "Content-Type": "application/json",

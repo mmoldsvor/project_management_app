@@ -1,6 +1,6 @@
 import React, {useCallback, useEffect, useState} from 'react';
 
-import ReactFlow, {addEdge, useNodesState, useEdgesState, MarkerType, updateEdge, useReactFlow} from 'reactflow';
+import ReactFlow, {MarkerType, updateEdge, useEdgesState, useNodesState} from 'reactflow';
 
 import CustomNode from './CostumNode';
 import FloatingEdge from './FloatingEdge';
@@ -9,10 +9,7 @@ import "../../styles/Relations.scss"
 
 import 'reactflow/dist/style.css';
 import './style.css';
-import TextInput from "../TextInput";
-import {FormLabel, Typography} from "@mui/material";
-import Button from "../Button";
-import SimpleDialog from "./SimpleDialog";
+import {Typography} from "@mui/material";
 import RelationsDialog from "./SimpleDialog";
 import {client} from "../App";
 import InfoDrawer from "../Drawer";
@@ -50,6 +47,7 @@ const defaultEdgeOptions = {
 };
 
 const nameToId = {}
+const idToName = {}
 const idToDatabaseIDs = {}
 const flowKey = 'timeplanning-flow';
 
@@ -65,6 +63,7 @@ const TimePlanning = () => {
         const tempNodes = workPackages.map((pack) => {
             x_pos = x_pos + 50
             nameToId[`${pack?.name}`] = pack?.id
+            idToName[`${pack?.id}`] = pack?.name
             return {
                 id: `${pack.name}`,
                 type: 'custom',
@@ -74,6 +73,7 @@ const TimePlanning = () => {
         })
         setNodes(tempNodes)
         await loadFromDatabase()
+        await restoreFlow(tempNodes)
     }
 
     useEffect(() => {
@@ -82,21 +82,44 @@ const TimePlanning = () => {
 
     const sendToDatabase = async (source, target, relation, duration) => {
         const id = (idToDatabaseIDs[`${source}${target}`]) ? idToDatabaseIDs[`${source}${target}`] : ""
-        const data = JSON.stringify({
+        const datarelation = {
             source: source,
             target: target,
             relation: relation,
             duration: parseInt(duration)
-        })
-        const dataBaseId = await client.postRelation(id, data)
+        }
+        const dataBaseId = await client.postRelation(id, JSON.stringify(datarelation))
+        const index = relations.findIndex(relat => relat.source === datarelation.source && relat.target === datarelation.target)
+        const newRelations = (index !== -1) ? relations[index] = datarelation : relations.concat([datarelation])
+        setRelations(prevState => newRelations)
         if (dataBaseId !== id){idToDatabaseIDs[`${source}${target}`] = dataBaseId.id}
     }
 
+    const [relations, setRelations] = useState([])
     const loadFromDatabase = async() => {
-        const relations = await client.fetchRelations()
-        relations?.relations.forEach((relation) => {
+        const relationsDatabase = await client.fetchRelations()
+        const tempRelations = []
+        const tempEdges = []
+        relationsDatabase?.relations.forEach((relation) => {
             idToDatabaseIDs[`${relation.source}${relation.target}`] = relation.id
+            tempRelations.push(relation)
+            tempEdges.push({
+                style: { strokeWidth: 3, stroke: 'black', "font-size": "28" },
+                type: 'smoothstep',
+                markerEnd: {
+                    type: MarkerType.ArrowClosed,
+                    color: 'black',
+                },
+                source: idToName[`${relation.source}`],
+                target: idToName[`${relation.target}`],
+                sourceHandle: null,
+                targetHandle: null,
+                label: `${relation.relation} (${relation.duration})`,
+                labelStyle: {fontsize: "26"}
+            })
         })
+        setRelations(tempRelations)
+        setEdges(tempEdges)
     }
 
     const onConnect = useCallback((edge) => {
@@ -130,16 +153,22 @@ const TimePlanning = () => {
         saveFlow()
     }
 
+    const [dialogState, setDialogState] = useState({})
     const handleConnect = (e) => {
         setNewEdge(e)
-        setTarget(e.target)
-        setSource(e.source)
+        const relation = relations.find(relation => idToName[relation.source] === e.source && idToName[relation.target] === e.target)?.relation
+        const duration = relations.find(relation => idToName[relation.source] === e.source && idToName[relation.target] === e.target)?.duration
+        console.log("Duration :", duration)
+        setDialogState(prevState => {return {
+            "target": e.target,
+            "source": e.source,
+            "relation": relation,
+            "duration": `${duration}`
+        }})
         setOpen(true);
     }
 
     const [rfInstance, setRfInstance] = useState(null);
-    const [source, setSource] = useState("")
-    const [target, setTarget] = useState("")
     const [newEdge, setNewEdge] = useState()
     const onEdgeUpdate = useCallback(
         (oldEdge, newConnection) => setEdges((els) => updateEdge(oldEdge, newConnection, els)),
@@ -154,16 +183,51 @@ const TimePlanning = () => {
         }
     }
 
-    const restoreFlow = async () => {
-        const flow = JSON.parse(await client.fetchTimePlanning())
-        console.log(flow)
-        if (flow) {
+
+    const restoreFlow = async (tempNodes) => {
+        const flow = await client.fetchTimePlanning()
+        let allIncluded = true
+        tempNodes.forEach(node => {
+            if (flow.nodes.findIndex(flow_node => flow_node.id === node.id) === - 1) {
+                allIncluded = false
+            }
+        })
+        if (flow && allIncluded) {
             const { x = 0, y = 0, zoom = 1 } = flow.viewport;
             setNodes(flow.nodes || []);
-            setEdges(flow.edges || []);
         }
     }
 
+    const create_critical_path = async () => {
+        const time_schedule = await client.fetchTimeSchedule()
+        let x_pos = 50;
+        let y_pos = 80;
+        console.log(time_schedule)
+        const tempNodes = []
+        for (const key in time_schedule) {
+            if (time_schedule.hasOwnProperty(key)) {
+                const pack = time_schedule[key]
+                const x_pos_temp = x_pos + (100 * pack?.early_start)
+                const y_pos_temp = y_pos
+                console.log(time_schedule[key])
+                tempNodes.push({
+                    id: `${key}`,
+                    type: 'custom',
+                    data: {
+                        label: key,
+                        early_finish: pack?.early_finish,
+                        early_start: pack?.early_start,
+                        float: pack?.float,
+                        late_finish: pack?.late_finish,
+                        late_start: pack?.late_start
+                    },
+                    position: {x: x_pos_temp, y: y_pos_temp}
+                })
+            }
+        }
+        setNodes(tempNodes)
+
+    }
 
     return (
         <div className="relations__outer">
@@ -184,8 +248,7 @@ const TimePlanning = () => {
                     open={open}
                     onClose={handleClose}
                     handleSave={handleSave}
-                    target={target}
-                    source={source}
+                    dialogState={dialogState}
                 />
                 <ReactFlow
                     nodes={nodes}
@@ -200,7 +263,7 @@ const TimePlanning = () => {
                     connectionLineComponent={CustomConnectionLine}
                     connectionLineStyle={connectionLineStyle}
                     onInit={setRfInstance}
-                    onNodeDoubleClick={restoreFlow}
+                    onNodeDoubleClick={create_critical_path}
                 />
             </div>
 

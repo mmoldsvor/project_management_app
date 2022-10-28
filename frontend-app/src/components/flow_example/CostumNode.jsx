@@ -12,9 +12,21 @@ export default function CustomNode(props) {
 
     return (
         <div className="customNode">
+            <Typography style={{"float": "right"}} >
+                LS: {props.data?.late_start}
+            </Typography>
+            <Typography style={{"float": "left"}} >
+                ES: {props.data?.early_start}
+            </Typography>
             <div
                 className="customNodeBody"
-                style={{
+                style={(props?.data?.float) ?
+                    {
+                        borderStyle: isTarget ? 'dashed' : 'solid',
+                        backgroundColor: props.data.float > 0 ? '#ccd9f6' : '#ffcce3' ,
+                    }
+                    :
+                    {
                     borderStyle: isTarget ? 'dashed' : 'solid',
                     backgroundColor: isTarget ? '#ffcce3' : '#ccd9f6',
                 }}
@@ -32,12 +44,18 @@ export default function CustomNode(props) {
                     type="target"
                 />
                 <Typography className="customNodeBody__inner_text" variant={"h6"}>
-                    {props.data?.label} ({props?.data.duration})
+                    {props.data?.label} {(props?.data.duration) ? `(${props?.data.duration})` : ""}
                 </Typography>
                 <Typography className="customNodeBody__inner_description" variant={"body1"}>
                     {props.data?.description}
                 </Typography>
             </div>
+            <Typography style={{"float": "right"}} >
+                LF: {props.data?.late_finish}
+            </Typography>
+            <Typography style={{"float": "left"}} >
+                EF: {props.data?.early_finish}
+            </Typography>
         </div>
     );
 }

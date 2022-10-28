@@ -16,20 +16,20 @@ export default function Header(){
         <div className={"header"}>
             <div>
                 <section className="header__logo" id="html" onClick={() => navigate("/")}>
-                    <img style={{height: 80}} src={blue_logo} />
+                    <img style={{height: 50}} src={blue_logo} />
                 </section>
             </div>
             <div className={"header__login_loggedin"}>
                 {loggedIn && <AccountCircleIcon
                     className={"header__loggedin"}
                     onClick={() => navigate("/projects")}
-                    sx={{ fontSize: 70 }}/>
+                    sx={{ fontSize: 40 }}/>
                 }
                 {!loggedIn && <Button
                     className="header__login"
                     onClick={() => navigate("/login")}
                     label="Log in"
-                    color={"orange"}
+                    color={"rgb(199, 199, 255)"}
                 />}
             </div>
             {loggedIn && <div className={"header__deliverables"}>

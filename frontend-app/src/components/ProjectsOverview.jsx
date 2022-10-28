@@ -42,6 +42,7 @@ export default function ProjectsOverview(){
             <Typography variant={"h3"}>Your projects</Typography>
             {projectCards}
             <br/>
+            <Button color="lightblue" label="New project" onClick={() => navigate("/create-project")}/>
             <Button
                 label={"Logout"}
                 onClick={() => {
@@ -67,7 +68,8 @@ function ProjectCard(props){
                 <Typography variant={"h4"}>{props.name}</Typography>
                 <Typography>{props.description}</Typography>
                 <Button label="Deliverables" onClick={() => navigate("/deliverables")}/>
-                <Button label="Workpackages" onClick={() => navigate("/work-packages")}/>
+                <Button label="Work-packages" onClick={() => navigate("/work-packages")}/>
+                <Button label="Time-planning" onClick={() => navigate("/time-planning")}/>
             </div>
         </div>
     )

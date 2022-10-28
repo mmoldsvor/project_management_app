@@ -12,7 +12,7 @@ import Select from 'react-select'
 import "../../styles/Relations.scss"
 import TextInput from "../TextInput";
 import Button from "../Button";
-import {useState} from "react";
+import {useEffect, useState} from "react";
 
 export interface RelationsProps {
     open: boolean;
@@ -37,9 +37,21 @@ export default function RelationsDialog(props: RelationsProps) {
         { value: 'SF', label: 'Start-to-finish' },
         { value: 'SS', label: 'Start-to-start' }
     ]
+    const defaultRelation = () => {
+        switch(props?.dialogState?.relation){
+            case "FF" : return { value: 'FF', label: 'Finish-to-finish' }
+            case "FS" : return { value: 'FS', label: 'Finish-to-start' }
+            case "SF" : return { value: 'SF', label: 'Start-to-finish' }
+            case "SS" : return { value: 'SS', label: 'Start-to-start' }
+            case undefined :
+        }
+    }
 
-    const [relation, setRelation] = useState("")
+    const [relation, setRelation] = useState(defaultRelation)
     const [delay, setDelay] = useState("")
+    useEffect(() => {
+        (props?.dialogState?.duration !== "undefined") ? setDelay(props?.dialogState?.duration) : setDelay("")
+    }, [props.dialogState])
 
     return (
         <Dialog open={open}>
@@ -47,6 +59,7 @@ export default function RelationsDialog(props: RelationsProps) {
                 <DialogTitle>Set relation between {props.source} and {props.target}</DialogTitle>
                 <Select
                     className={"relations__options"}
+                    defaultValue={defaultRelation}
                     onChange={e => setRelation(e.value)}
                     options={relationsOptions} />
                 <br/>

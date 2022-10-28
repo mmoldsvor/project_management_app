@@ -34,10 +34,8 @@ export default function ProjectDeliverables() {
         let tempDeliverablesRows = []
         let tempSubDeliverablesRows = []
         const tempSubDeliverables = {}
-        projectInfo.project.deliverables.forEach((deliverable) => console.log(deliverable))
         projectInfo?.project?.deliverables.forEach(deliverable => {
             setWorkingOn("deliverables")
-            tempDeliverables[deliverable.name] = deliverable.description
             const id = "deliv: " +  ((tempDeliverablesRows?.at(-1)?.id?.split(":")[1]) ? parseInt(tempDeliverablesRows?.at(-1)?.id?.split(":")[1]) + 1 : 1)
             databaseIDs[`${id}`] = deliverable.id
             tempDeliverablesRows = tempDeliverablesRows.concat([{
@@ -46,7 +44,6 @@ export default function ProjectDeliverables() {
                 "description": deliverable.description
             }])
             deliverable?.subdeliverables?.forEach(subDeliverable => {
-                tempSubDeliverables[subDeliverable.name] = subDeliverable.description
                 const id = "subDeliv: " +  ((tempSubDeliverablesRows?.at(-1)?.id.split(" ")[1]) ? parseInt(tempSubDeliverablesRows?.at(-1)?.id.split(" ")[1]) + 1 : 1)
                 databaseIDs[`${id}`] = subDeliverable.id
                 tempSubDeliverablesRows = tempSubDeliverablesRows.concat([{
@@ -57,17 +54,12 @@ export default function ProjectDeliverables() {
                 }])
             })
         })
-        setSubDeliverables(tempSubDeliverables)
         setDeliverableRows(tempDeliverablesRows)
         setSubDeliverableRows(tempSubDeliverablesRows)
-        setDeliverables(tempDeliverables)
     }
     useEffect(() => {
         loadProjectInfo()
     }, [])
-
-    const [deliverables, setDeliverables] = useState({})
-    const [subDeliverables, setSubDeliverables] = useState({})
 
     const updateDeliverableRow = async (e) => {
         const rowIndex = deliverableRows.findIndex(element => element.id === e.id)
@@ -109,8 +101,8 @@ export default function ProjectDeliverables() {
                 "description": desc
             }
             await sendToDatabase(id, row)
-            setDeliverables(prevState => {return {...prevState, [name]: desc}})
-            setDeliverableRows(prevState => {return prevState.concat([row])})
+            const newRows = deliverableRows.concat([row])
+            setDeliverableRows(prevState => newRows)
         }
         else if (rowType === "sub_deliverables"){
             const id = "subDeliv: " +  ((subDeliverableRows?.at(-1)?.id.split(" ")[1]) ? parseInt(subDeliverableRows?.at(-1)?.id.split(" ")[1]) + 1 : 1)
@@ -121,8 +113,8 @@ export default function ProjectDeliverables() {
                 "under": deliverableRows.at(index)?.name
             }
             await sendToDatabase(id, row)
-            setSubDeliverables(prevState => {return {...prevState, [name]: desc}})
-            setSubDeliverableRows(prevState => {return prevState.concat([row])})
+            const newRows = subDeliverableRows.concat([row])
+            setSubDeliverableRows(prevState => newRows)
         }
     }
     const [workingOn, setWorkingOn] = useState("layers")
@@ -141,11 +133,7 @@ export default function ProjectDeliverables() {
     const [subDeliverableRows, setSubDeliverableRows] = useState([])
     const navigateToWorkPackages = () => {
         return (
-            navigate("/work-packages", {state: {
-                    "deliverables": deliverables,
-                    "subDeliverables" : subDeliverables,
-                    "projectInfo": projectInfo
-                }})
+            navigate("/work-packages")
         )
     }
     return (
@@ -217,9 +205,10 @@ function ProjectGoal(props){
 }
 
 function Deliverables(props){
-    const addDeliverables = async () => {
+    const addDeliverables = () => {
         if (state?.deliverable_name !== "" && state?.deliverable_desc !== ""){
-            await props.addRow("deliverables", state.deliverable_name, state.deliverable_desc)
+            console.log("Hello")
+            props.addRow("deliverables", state.deliverable_name, state.deliverable_desc)
             setState(prevState => {
                 return {...prevState, ["deliverable_name"]: "" , ["deliverable_desc"]: ""}
             })
@@ -267,7 +256,7 @@ function Deliverables(props){
 function SubDeliverables(props){
     const addSubDeliverables = async () => {
         if (state?.sub_deliverable_name !== "" && state?.sub_deliverable_desc !== "") {
-            await props.addRow("sub_deliverables", state.sub_deliverable_name, state.sub_deliverable_desc, index)
+            props.addRow("sub_deliverables", state.sub_deliverable_name, state.sub_deliverable_desc, index)
             setState(prevState => {
                 return {...prevState, ["sub_deliverable_name"]: "", ["sub_deliverable_desc"]: ""}
             })
