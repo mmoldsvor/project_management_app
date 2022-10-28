@@ -1,9 +1,10 @@
 from collections import defaultdict, Counter
-from xml.dom import ValidationErr
+
 
 class LoopError(Exception):
     """Raised when graph contains loops"""
     pass
+
 
 class Graph:
     def __init__(self):
@@ -49,4 +50,3 @@ class Graph:
         if not len(sources - targets):
             raise LoopError('Graph contains loops (end_node)')
         return sources - targets
-

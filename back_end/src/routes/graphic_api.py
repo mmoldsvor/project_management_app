@@ -82,7 +82,11 @@ def graph_test():
         source = data['work_packages'][relation['source']]
         graph.add_edge(source, target, (relation['relation'], relation['duration']))
 
-    traverse_package_graph(graph)
+    try:
+        traverse_package_graph(graph)
+    except LoopError:
+        return {'errors': 'Graph contains loops'}, 422
+    
     x,y = work_package_graph(graph)
     
     return '\n'.join([str(x),str(y)])
