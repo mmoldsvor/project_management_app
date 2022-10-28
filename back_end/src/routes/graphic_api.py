@@ -14,7 +14,7 @@ from utility.auth_utils import has_project_access
 graphic_api = Blueprint('graphic_api', __name__)
 
 
-@graphic_api.route('/api/project/<project_id>/time_schedule', methods=['GET'])
+@graphic_api.route('/project/<project_id>/time_schedule', methods=['GET'])
 @auth_required
 def time_schedule(jwt_data, project_id):
     if not has_project_access(jwt_data['uuid'], project_id):
@@ -65,7 +65,7 @@ def time_schedule(jwt_data, project_id):
     return work_package_dates
 
 
-@graphic_api.route('/api/graph_work_package', methods=['GET'])
+@graphic_api.route('/graph_work_package', methods=['GET'])
 def graph_test():
     input = request.get_json()
     try:
