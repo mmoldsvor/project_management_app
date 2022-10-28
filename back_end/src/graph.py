@@ -1,4 +1,9 @@
-from collections import defaultdict
+from collections import defaultdict, Counter
+
+
+class LoopError(Exception):
+    """Raised when graph contains loops"""
+    pass
 
 
 class Graph:
@@ -24,13 +29,18 @@ class Graph:
 
                 visited.append(target)
                 queue.append(target)
-
+                
+                counter_dict = Counter(visited)
+                for key in counter_dict:
+                        if (counter_dict[key] >= 500):
+                            raise LoopError('Graph contains loops')
+                        
     @property
     def start_nodes(self):
         targets = set([value for sublist in self.graph.values() for value, _ in sublist])
         sources = set(self.graph.keys())
         if not len(sources - targets):
-            raise Exception('Graph contains loops')
+            raise LoopError('Graph contains loops (start_node)')
         return sources - targets
 
     @property
@@ -38,5 +48,5 @@ class Graph:
         targets = set([value for sublist in self.graph_reverse.values() for value, _ in sublist])
         sources = set(self.graph_reverse.keys())
         if not len(sources - targets):
-            raise Exception('Graph contains loops')
+            raise LoopError('Graph contains loops (end_node)')
         return sources - targets

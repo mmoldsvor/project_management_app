@@ -13,7 +13,7 @@ from utility.deliverable_utils import get_deliverable_list, get_subdeliverable_l
 deliverable_api = Blueprint('deliverable_api', __name__)
 
 
-@deliverable_api.route('/api/project/<project_id>/deliverable/', methods=['POST'])
+@deliverable_api.route('/project/<project_id>/deliverable/', methods=['POST'])
 @auth_required
 def create_deliverable(jwt_data, project_id):
     if not has_project_access(jwt_data['uuid'], project_id):
@@ -32,7 +32,7 @@ def create_deliverable(jwt_data, project_id):
     return {'id': str(deliverable.id)}, 200 
 
 
-@deliverable_api.route('/api/project/<project_id>/deliverables', methods=['GET'])
+@deliverable_api.route('/project/<project_id>/deliverables', methods=['GET'])
 @auth_required
 def list_deliverables(jwt_data, project_id):
     if not has_project_access(jwt_data['uuid'], project_id):
@@ -43,7 +43,7 @@ def list_deliverables(jwt_data, project_id):
     return {'deliverables': deliverables}, 200
 
 
-@deliverable_api.route('/api/project/<project_id>/deliverable/<deliverable_id>', methods=['GET', 'POST', 'DELETE'])
+@deliverable_api.route('/project/<project_id>/deliverable/<deliverable_id>', methods=['GET', 'POST', 'DELETE'])
 @auth_required
 def get_or_delete_deliverable(jwt_data, project_id, deliverable_id):
     if not has_project_access(jwt_data['uuid'], project_id):
@@ -83,7 +83,7 @@ def get_or_delete_deliverable(jwt_data, project_id, deliverable_id):
     return {'deliverable': deliverable_output_schema.dump(deliverable_dict)}, 200
 
 
-@deliverable_api.route('/api/project/<project_id>/deliverable/<deliverable_id>/subdeliverable/', methods=['POST'])
+@deliverable_api.route('/project/<project_id>/deliverable/<deliverable_id>/subdeliverable/', methods=['POST'])
 @auth_required
 def create_subdeliverable(jwt_data, project_id, deliverable_id):
     if not has_project_access(jwt_data['uuid'], project_id):
@@ -105,7 +105,7 @@ def create_subdeliverable(jwt_data, project_id, deliverable_id):
     return {'id': str(subdeliverable.id)}, 200
 
 
-@deliverable_api.route('/api/project/<project_id>/deliverable/<deliverable_id>/subdeliverables', methods=['GET'])
+@deliverable_api.route('/project/<project_id>/deliverable/<deliverable_id>/subdeliverables', methods=['GET'])
 @auth_required
 def list_subdeliverables(jwt_data, project_id, deliverable_id):
     if not has_project_access(jwt_data['uuid'], project_id):
@@ -119,7 +119,7 @@ def list_subdeliverables(jwt_data, project_id, deliverable_id):
     return {'subdeliverables': subdeliverables}, 200
 
 
-@deliverable_api.route('/api/project/<project_id>/deliverable/<deliverable_id>/subdeliverable/<subdeliverable_id>', methods=['GET', 'POST', 'DELETE'])
+@deliverable_api.route('/project/<project_id>/deliverable/<deliverable_id>/subdeliverable/<subdeliverable_id>', methods=['GET', 'POST', 'DELETE'])
 @auth_required
 def get_or_delete_subdeliverable(jwt_data, project_id, deliverable_id, subdeliverable_id):
     if not has_project_access(jwt_data['uuid'], project_id):

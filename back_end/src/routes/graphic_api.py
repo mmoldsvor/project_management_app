@@ -4,7 +4,7 @@ from marshmallow import ValidationError
 from database_models import WorkPackageTable, WorkPackageRelationTable
 from work_package import relations_schema, traverse_package_graph, WorkPackage
 from render import work_package_graph
-from graph import Graph
+from graph import Graph, LoopError
 from auth import auth_required
 from schemas import work_package_relation_output_schema
 
@@ -14,7 +14,7 @@ from utility.auth_utils import has_project_access
 graphic_api = Blueprint('graphic_api', __name__)
 
 
-@graphic_api.route('/api/project/<project_id>/time_schedule', methods=['GET'])
+@graphic_api.route('/project/<project_id>/time_schedule', methods=['GET'])
 @auth_required
 def time_schedule(jwt_data, project_id):
     if not has_project_access(jwt_data['uuid'], project_id):
@@ -50,7 +50,10 @@ def time_schedule(jwt_data, project_id):
         source = work_package_dict[relation['source']]
         graph.add_edge(source, target, (relation['relation'], relation['duration']))
 
-    traverse_package_graph(graph)
+    try:
+        traverse_package_graph(graph)
+    except LoopError:
+        return {'errors': 'Graph contains loops'}, 422
 
     work_package_dates = {}
     for node in graph.nodes:
@@ -65,7 +68,7 @@ def time_schedule(jwt_data, project_id):
     return work_package_dates
 
 
-@graphic_api.route('/api/graph_work_package', methods=['GET'])
+@graphic_api.route('/graph_work_package', methods=['GET'])
 def graph_test():
     input = request.get_json()
     try:
@@ -79,7 +82,11 @@ def graph_test():
         source = data['work_packages'][relation['source']]
         graph.add_edge(source, target, (relation['relation'], relation['duration']))
 
-    traverse_package_graph(graph)
+    try:
+        traverse_package_graph(graph)
+    except LoopError:
+        return {'errors': 'Graph contains loops'}, 422
+    
     x,y = work_package_graph(graph)
     
     return '\n'.join([str(x),str(y)])
