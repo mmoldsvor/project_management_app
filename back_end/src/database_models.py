@@ -1,5 +1,6 @@
 import os
 import uuid
+from xmlrpc.client import Boolean
 from peewee import *
 from playhouse.postgres_ext import *
 
@@ -26,6 +27,7 @@ class ProjectTable(BaseModel):
     name = CharField()
     project_type = CharField()
     description = CharField()
+    deliverable_only = BooleanField()
 
 
 class ProjectOwnerTable(BaseModel):
