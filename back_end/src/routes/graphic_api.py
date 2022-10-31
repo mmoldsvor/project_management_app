@@ -58,6 +58,7 @@ def time_schedule(jwt_data, project_id):
     work_package_dates = {}
     for node in graph.nodes:
         work_package_dates[node.name] = {
+            'duration': node.duration,
             'early_start': node.early_start,
             'early_finish': node.early_finish,
             'late_start': node.late_start,

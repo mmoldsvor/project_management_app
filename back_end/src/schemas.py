@@ -25,9 +25,9 @@ test_schema = TestSchema()
 class WorkPackageSchema(Schema):
     id = fields.Int()
     name = fields.Str(required=True)
-    description = fields.Str()
-    resources = fields.Int()
-    duration = fields.Int()
+    description = fields.Str(missing='')
+    resources = fields.Int(missing=0)
+    duration = fields.Int(missing=0)
 
     deliverable_id = fields.Int()
     subdeliverable_id = fields.Int()
@@ -40,7 +40,7 @@ class WorkPackageSchema(Schema):
 class SubdeliverableSchema(Schema):
     id = fields.Int()
     name = fields.Str(required=True)
-    description = fields.Str()
+    description = fields.Str(missing='')
 
     work_packages = fields.List(fields.Nested(WorkPackageSchema))
 
@@ -48,7 +48,7 @@ class SubdeliverableSchema(Schema):
 class DeliverableSchema(Schema):
     id = fields.Int()
     name = fields.Str(required=True)
-    description = fields.Str()
+    description = fields.Str(missing='')
 
     subdeliverables = fields.List(fields.Nested(SubdeliverableSchema))
     work_packages = fields.List(fields.Nested(WorkPackageSchema))
