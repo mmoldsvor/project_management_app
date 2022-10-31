@@ -90,8 +90,15 @@ const TimePlanning = () => {
         }
         const dataBaseId = await client.postRelation(id, JSON.stringify(datarelation))
         const index = relations.findIndex(relat => relat.source === datarelation.source && relat.target === datarelation.target)
-        const newRelations = (index !== -1) ? relations[index] = datarelation : relations.concat([datarelation])
-        setRelations(prevState => newRelations)
+        if (index !== -1){
+            let relationsCopy = [...relations]
+            relationsCopy[index] = datarelation
+            setRelations(prevState => relationsCopy)
+        }
+        else {
+            const newRelations = relations.concat([datarelation])
+            setRelations(prevState => newRelations)
+        }
         if (dataBaseId !== id){idToDatabaseIDs[`${source}${target}`] = dataBaseId.id}
     }
 
@@ -156,6 +163,7 @@ const TimePlanning = () => {
     const [dialogState, setDialogState] = useState({})
     const handleConnect = (e) => {
         setNewEdge(e)
+        console.log(relations)
         const relation = relations.find(relation => idToName[relation.source] === e.source && idToName[relation.target] === e.target)?.relation
         const duration = relations.find(relation => idToName[relation.source] === e.source && idToName[relation.target] === e.target)?.duration
         console.log("Duration :", duration)
@@ -207,9 +215,7 @@ const TimePlanning = () => {
         for (const key in time_schedule) {
             if (time_schedule.hasOwnProperty(key)) {
                 const pack = time_schedule[key]
-                const x_pos_temp = x_pos + (100 * pack?.early_start)
-                const y_pos_temp = y_pos
-                console.log(time_schedule[key])
+                const equalNode = nodes.find(node => node.id === `${key}`)
                 tempNodes.push({
                     id: `${key}`,
                     type: 'custom',
@@ -221,7 +227,7 @@ const TimePlanning = () => {
                         late_finish: pack?.late_finish,
                         late_start: pack?.late_start
                     },
-                    position: {x: x_pos_temp, y: y_pos_temp}
+                    position: {x: equalNode?.position.x, y: equalNode?.position.y}
                 })
             }
         }
@@ -231,9 +237,8 @@ const TimePlanning = () => {
 
     return (
         <div className="relations__outer">
-
-            <div className={"infoGrid"}>
-                <Typography style={{"margin-left": "50px"}} variant={"h3"}>Time planning</Typography>
+            <div className={"infoGrid"} style={{"marginTop" : "30px"}}>
+                <Typography style={{"margin-left": "50px"}} variant={"h4"}>Time planning</Typography>
                 <InfoDrawer
                     title={"Time planning"}
                     info_text={infoText}

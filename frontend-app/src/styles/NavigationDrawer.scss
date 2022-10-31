@@ -1,0 +1,39 @@
+.navigaton_drawer__div_closed{
+  width: 60px;
+  padding-top: 30px;
+  text-align: left;
+  margin-left: 10px;
+  //border-right: black;
+  //border-width: 1px;
+  //border-right-style: solid;
+}
+.navigaton_drawer__div_open{
+  margin-top: 30px;
+  text-align: left;
+  margin-left: 10px;
+  width: 180px;
+  //border-right: black;
+  //border-width: 1px;
+  //border-right-style: solid;
+}
+.navigaton_drawer__inner_container{
+  display: flex;
+  padding: 5px;
+  border-style: solid;
+  border-width: 1.5px;
+  border-radius: 5px;
+  border-color: gray;
+  cursor: pointer;
+  flex: 1;
+  margin-top: 10px;
+}
+.navigaton_drawer__inner_icons{
+  margin-left: 10px;
+}
+
+.navigaton_drawer__inner_text{
+  align-content: center;
+  padding-top: 5px;
+  padding-left: 10px;
+  margin-left: 10px;
+}

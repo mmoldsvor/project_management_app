@@ -1,6 +1,6 @@
 .header{
   display: grid;
-  grid-template-columns: repeat(6, 1fr);
+  grid-template-columns: repeat(5, 1fr) 100px;
   //grid-template-rows: repeat(2, 1fr);
   height: 60px;
   background-color: rgb(212, 238, 246);
@@ -64,9 +64,7 @@
   grid-row: 1;
   float: right;
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
   grid-column-gap: 10px;
-  padding-top: 5px;
 }
 
 .header__button{
@@ -77,6 +75,18 @@
   border-radius: 3px;
   background-color: rgb(199, 199, 255);
   font-size: small;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.header__select{
+  border-color: rgb(13, 0, 0) ;
+  border-width:3px;
+  width: 200px;
+  height: fit-content;
+  border-style: solid ;
+  border-radius: 3px;
+  font-size: medium;
   cursor: pointer;
   white-space: nowrap;
 }

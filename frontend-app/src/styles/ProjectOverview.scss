@@ -3,8 +3,7 @@
   border-color: black;
   border-width: 4px;
   margin-top: 50px;
-  width: 600px;
-  height: 200px;
+  width: 650px;
 }
 .projectCard__selected{
   @extend .projectCard;
@@ -12,5 +11,10 @@
 }
 
 .projectCard__inner{
-  padding-left: 20px;
+  padding: 20px;
+}
+
+.projectCard__inner_grid{
+  display: grid;
+  grid-template-columns: repeat(auto-fit, 190px);
 }

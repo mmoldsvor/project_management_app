@@ -119,6 +119,8 @@ export default function ProjectWorkpackages() {
             "description": row.description,
             "name": row.name,
             "resources": row.resources,
+            // "subdeliverable_id",
+            // "deliverable_id",
         }
         const temp_id = await client.postWorkPackage(databaseID, JSON.stringify(workPackage))
         if (databaseID === "") {databaseIDs[`${id}`] = temp_id.id}
@@ -145,71 +147,74 @@ export default function ProjectWorkpackages() {
     }
 
     return (
-        <div className="deliverables__grid">
-            <div className={"deliverables__grid_left"}>
-                <Typography className={"general__inner_element"} variant={"h5"}>
-                    Deliverable : {deliverablesAndSubDeliverables[userState.index]?.name}
-                </Typography>
-                <Typography className={"general__inner_element"}>
-                    Break up your project deliverable into discrete work-packages
-                </Typography>
-                <InfoDrawer
-                    title={"Work-packages"}
-                    info_text={infoText}
-                />
-                <TextInput
-                    className={"general__text_input"}
-                    label="Work-package name - f.ex: Fix necessary firewall permissions"
-                    name="name"
-                    value={userState.name}
-                    onChange={changeHandler}
-                />
-                <TextInput
-                    className={"general__text_input"}
-                    label="Work-package duration - f.ex: 1-4"
-                    name="duration"
-                    value={userState.duration}
-                    onChange={changeHandler}
-                />
-                <TextInput
-                    className={"general__text_input"}
-                    label="Work-package resources - f.ex: 4"
-                    name="resources"
-                    value={userState.resources}
-                    onChange={changeHandler}
-                />
-                <TextInput
-                    className={"general__text_input__large"}
-                    label="Additional description - f.ex remember to document the process"
-                    name="description"
-                    value={userState.description}
-                    onChange={changeHandler}
-                />
-
-                <Button color="lightblue" label = "Add work-package" onClick={() => {
-                    addWorkPackage()
-                }}/>
-                {userState.index < deliverablesAndSubDeliverables.length - 1 && <Button
-                    label={"Next deliverable"}
-                    onClick={() => setUserState(prevState => {return {...prevState, ["index"]: prevState.index + 1}})}
-                />}
-                {userState.index > 0 && <Button
-                    label={"Previous deliverable"}
-                    onClick={() => setUserState(prevState => {return {...prevState, ["index"]: prevState.index - 1}})}
-                />}
-                <Button
-                    label={"Continue to time planning"}
-                    onClick={() => navigate("/time-planning")}
-                />
-            </div>
-            <div className={"deliverables__grid_right"}>
-                <Typography className={"general__inner_element"} variant={"h5"}>Work-Packages</Typography>
-                <div className={"deliverables__tables"}>
-                    <DataGrid
-                        rows={workPackageRows}
-                        onCellEditCommit={e => updateWorkPackage(e)}
-                        columns={workPackageColumns}
+        <div style={{"padding-left": "50px"}}>
+            <div className="deliverables__grid">
+                <div className={"deliverables__grid_left"}>
+                    <Typography className={"general__inner_element"}  variant={"h4"}>Work-packages</Typography>
+                    <Typography className={"general__inner_element"} variant={"h5"}>
+                        Deliverable : {deliverablesAndSubDeliverables[userState.index]?.name}
+                    </Typography>
+                    <Typography className={"general__inner_element"}>
+                        Break up your project deliverable into discrete work-packages
+                    </Typography>
+                    <InfoDrawer
+                        title={"Work-packages"}
+                        info_text={infoText}
                     />
+                    <TextInput
+                        className={"general__text_input"}
+                        label="Work-package name - f.ex: Fix necessary firewall permissions"
+                        name="name"
+                        value={userState.name}
+                        onChange={changeHandler}
+                    />
+                    <TextInput
+                        className={"general__text_input"}
+                        label="Work-package duration - f.ex: 1-4"
+                        name="duration"
+                        value={userState.duration}
+                        onChange={changeHandler}
+                    />
+                    <TextInput
+                        className={"general__text_input"}
+                        label="Work-package resources - f.ex: 4"
+                        name="resources"
+                        value={userState.resources}
+                        onChange={changeHandler}
+                    />
+                    <TextInput
+                        className={"general__text_input__large"}
+                        label="Additional description - f.ex remember to document the process"
+                        name="description"
+                        value={userState.description}
+                        onChange={changeHandler}
+                    />
+
+                    <Button color="lightblue" label = "Add work-package" onClick={() => {
+                        addWorkPackage()
+                    }}/>
+                    {userState.index < deliverablesAndSubDeliverables.length - 1 && <Button
+                        label={"Next deliverable"}
+                        onClick={() => setUserState(prevState => {return {...prevState, ["index"]: prevState.index + 1}})}
+                    />}
+                    {userState.index > 0 && <Button
+                        label={"Previous deliverable"}
+                        onClick={() => setUserState(prevState => {return {...prevState, ["index"]: prevState.index - 1}})}
+                    />}
+                    <Button
+                        label={"Continue to time planning"}
+                        onClick={() => navigate("/time-planning")}
+                    />
+                </div>
+                <div className={"deliverables__grid_right"}>
+                    <Typography className={"general__inner_element"} variant={"h5"}>Work-Packages</Typography>
+                    <div className={"deliverables__tables"}>
+                        <DataGrid
+                            rows={workPackageRows}
+                            onCellEditCommit={e => updateWorkPackage(e)}
+                            columns={workPackageColumns}
+                        />
+                    </div>
                 </div>
             </div>
         </div>

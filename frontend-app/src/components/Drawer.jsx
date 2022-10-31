@@ -24,7 +24,7 @@ export default function InfoDrawer(props) {
 
     const InfoDrawer = () => (
         <Box
-            className="drawer"
+            className="info_drawer"
             sx={'250'}
             role="presentation"
             onClick={() => toggleDrawer(false)}

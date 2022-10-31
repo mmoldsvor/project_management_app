@@ -1,7 +1,7 @@
 {
   "name": "frontend-app",
   "version": "0.1.0",
-  "homepage": "https://github.com/mmoldsvor/project_management_app",
+  "homepage": "https://mmoldsvor.github.io/project_management_app",
   "private": true,
   "dependencies": {
     "@emotion/react": "^11.10.4",

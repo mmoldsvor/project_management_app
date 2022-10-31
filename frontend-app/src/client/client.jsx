@@ -126,9 +126,6 @@ export default class OurClient {
     async fetchProjectInfo(){
         const token = checkToken()
         const project_id = this.getProjectId()
-        if (project_id == null) {
-            window.location.href = window.location.origin + "/projects"
-        }
         const url = new URL(`${ourURL}/project/${project_id}`,this.baseUrl)
         const resp = await fetch(url, {
             headers: {
@@ -225,7 +222,7 @@ async function handleResponse(response){
         case 200:
             return response.json();
         case 201:
-            return null
+            return response.json();
         case 204:
             return null
         case 404:

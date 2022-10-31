@@ -13,7 +13,8 @@ export function checkToken(){
     if (decodedJWT !== null) {
         if(decodedJWT.exp * 1000 < Date.now()) {
             localStorage.removeItem("login-token")
-            window.location.href = window.location.origin + "/login"
+            localStorage.removeItem("selected_project-id")
+            window.location.href = window.location.origin + "/project_managment_app/login"
         }
     }
     return token

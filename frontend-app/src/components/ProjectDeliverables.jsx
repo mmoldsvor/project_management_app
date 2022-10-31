@@ -117,7 +117,7 @@ export default function ProjectDeliverables() {
             setSubDeliverableRows(prevState => newRows)
         }
     }
-    const [workingOn, setWorkingOn] = useState("layers")
+    const [workingOn, setWorkingOn] = useState("deliverables")
     const [deliverableRows, setDeliverableRows] = useState([])
     const deliverableColumns : GridColDef = [
         { field: 'id', headerName: 'ID', width: 100, editable: false },
@@ -137,76 +137,54 @@ export default function ProjectDeliverables() {
         )
     }
     return (
-        <div className="deliverables__grid">
-            <div className={"deliverables__grid_left"}>
-                <Typography className={"general__inner_element"} variant={"h5"}>Project goal:</Typography>
-                <Typography className={"general__inner_element"} variant={"h4"}>{projectInfo?.name}</Typography>
-                {workingOn === "layers" && <ProjectGoal onContinue={setWorkingOn} changeHandler={changeHandler}/>}
-                {workingOn === "deliverables" && <Deliverables
-                    setWorkingOn={setWorkingOn}
-                    addRow={addRow}
-                />}
+        <div style={{"padding-left": "50px"}}>
+            <div className="deliverables__grid">
+                <div className={"deliverables__grid_left"}>
+                    <Typography className={"general__inner_element"}  variant={"h4"}>Deliverables</Typography>
+                    <Typography className={"general__inner_element"} variant={"h5"}>Project goal: {projectInfo?.name} </Typography>
+                    {workingOn === "deliverables" && <Deliverables
+                        setWorkingOn={setWorkingOn}
+                        addRow={addRow}
+                    />}
 
-                {workingOn === "subDeliverables" && userState.layers === "2" && <SubDeliverables
-                    deliverableRows={deliverableRows}
-                    setWorkingOn={setWorkingOn}
-                    addRow={addRow}
-                    navigateToWorkPackages={navigateToWorkPackages}
-                />}
-                {workingOn === "subDeliverables" && userState.layers === "1" && navigateToWorkPackages()}
-            </div>
-
-            <div className={"deliverables__grid_right"}>
-                <Typography className={"general__inner_element"} variant={"h5"}>Deliverables</Typography>
-                <div className={"deliverables__tables"}>
-                    <DataGrid
-                        rows={deliverableRows}
-                        columns={deliverableColumns}
-                        onCellEditCommit={e => updateDeliverableRow(e)}
-                    />
+                    {workingOn === "subDeliverables" && userState.layers === "2" && <SubDeliverables
+                        deliverableRows={deliverableRows}
+                        setWorkingOn={setWorkingOn}
+                        addRow={addRow}
+                        navigateToWorkPackages={navigateToWorkPackages}
+                    />}
+                    {workingOn === "subDeliverables" && userState.layers === "1" && navigateToWorkPackages()}
                 </div>
-                {userState.layers === "2" && <div>
-                    <Typography className={"general__inner_element"} variant={"h5"}>Sub-deliverables</Typography>
+
+                <div className={"deliverables__grid_right"}>
+                    <Typography className={"general__inner_element"} variant={"h5"}>Deliverables</Typography>
                     <div className={"deliverables__tables"}>
                         <DataGrid
-                            onCellEditCommit={e => updateSubDeliverableRow(e)}
-                            rows={subDeliverableRows}
-                            columns={subDeliverablesColumns}
+                            rows={deliverableRows}
+                            columns={deliverableColumns}
+                            onCellEditCommit={e => updateDeliverableRow(e)}
                         />
                     </div>
-                </div>}
+                    {userState.layers === "2" && <div>
+                        <Typography className={"general__inner_element"} variant={"h5"}>Sub-deliverables</Typography>
+                        <div className={"deliverables__tables"}>
+                            <DataGrid
+                                onCellEditCommit={e => updateSubDeliverableRow(e)}
+                                rows={subDeliverableRows}
+                                columns={subDeliverablesColumns}
+                            />
+                        </div>
+                    </div>}
+                </div>
             </div>
         </div>
     );
 }
 
-function ProjectGoal(props){
-    return (
-        <div>
-            <Typography className={"general__inner_element"} variant={"body1"}>
-                How many layers of deliverables do you want to divide your project into?
-            </Typography>
-            <RadioGroup
-                onChange={props.changeHandler}
-                aria-labelledby="demo-radio-buttons-group-label"
-                defaultValue="2"
-                name="layers"
-            >
-                <FormControlLabel value="2" control={<Radio />} label="Deliverables and Sub-deliverables" />
-                <FormControlLabel value="1" control={<Radio />} label="Only deliverables" />
-            </RadioGroup>
-            <Button
-                onClick={() => props.onContinue("deliverables")}
-                label={"Continue"}
-                color={"lightBlue"}
-            />
-        </div>
-    )
-}
 
 function Deliverables(props){
     const addDeliverables = () => {
-        if (state?.deliverable_name !== "" && state?.deliverable_desc !== ""){
+        if (state?.deliverable_name !== ""){
             console.log("Hello")
             props.addRow("deliverables", state.deliverable_name, state.deliverable_desc)
             setState(prevState => {
@@ -255,7 +233,7 @@ function Deliverables(props){
 
 function SubDeliverables(props){
     const addSubDeliverables = async () => {
-        if (state?.sub_deliverable_name !== "" && state?.sub_deliverable_desc !== "") {
+        if (state?.sub_deliverable_name !== "") {
             props.addRow("sub_deliverables", state.sub_deliverable_name, state.sub_deliverable_desc, index)
             setState(prevState => {
                 return {...prevState, ["sub_deliverable_name"]: "", ["sub_deliverable_desc"]: ""}

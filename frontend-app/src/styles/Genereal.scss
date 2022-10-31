@@ -4,6 +4,8 @@ $BORDER-RADIUS : 3px;
   margin-top: 20px;
   padding-left: 100px;
   text-align: left;
+  padding-bottom: 100px;
+  margin-bottom: 100px;
 }
 .general__inner_element{
   padding-top: 10px;
@@ -11,6 +13,24 @@ $BORDER-RADIUS : 3px;
 
 .general__checkbox{
 
+}
+.container {
+  display: flex;
+  flex: 1;
+}
+
+.drawer {
+  width: 20px;
+  transition: width 0.7s;
+  height: available;
+}
+
+.opened {
+  width: 240px;
+}
+
+.main {
+  flex: 1;
 }
 
 .pre {

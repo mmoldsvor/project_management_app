@@ -9,6 +9,7 @@ import CreateUser from "../authorization/CreateUser";
 import CreateProject from "../components/CreateProject";
 import ProjectsOverview from "../components/ProjectsOverview";
 import TimePlanning from "../components/flow_example/TimePlanning";
+import ProjectSummary from "../components/ProjectSummary";
 
 export const AppRoutes = (
     <Routes>
@@ -22,5 +23,6 @@ export const AppRoutes = (
         <Route key="new-project" path="/new-project" element={<CreateProject/>} />
         <Route key="projects-overview" path="/projects" element={<ProjectsOverview/>} />
         <Route key="flow" path="/time-planning" element={<TimePlanning/>}/>
+        <Route key="summary" path="/summary" element={<ProjectSummary/>}/>
     </Routes>
 );

@@ -33,7 +33,6 @@ export default function ProjectsOverview(){
                 </div>
             )
         })
-        console.log(projects)
         setProjectCards(_ => {return tempProjects})
     }, [projects, change])
 
@@ -63,13 +62,29 @@ function ProjectCard(props){
     }
     const className = (props.project_id === localStorage.getItem("selected_project-id")) ? "projectCard__selected" : "projectCard"
     return (
-        <div className={className} onClick={() => selectProject(props.project_id)}>
+        <div className={className}>
             <div className={"projectCard__inner"}>
                 <Typography variant={"h4"}>{props.name}</Typography>
                 <Typography>{props.description}</Typography>
-                <Button label="Deliverables" onClick={() => navigate("/deliverables")}/>
-                <Button label="Work-packages" onClick={() => navigate("/work-packages")}/>
-                <Button label="Time-planning" onClick={() => navigate("/time-planning")}/>
+                <div className={"projectCard__inner_grid"}>
+                    <Button label="Select project" color="lightblue" onClick={() => selectProject(props.project_id)}/>
+                    <Button label="Project summary" onClick={() => selectProject(props.project_id)}/>
+                </div>
+                <div className={"projectCard__inner_grid"}>
+                    <Button label="Deliverables" onClick={() => {
+                        selectProject(props.project_id)
+                        navigate("/deliverables")
+                    }}/>
+                    <Button label="Work-packages" onClick={() => {
+                        selectProject(props.project_id)
+                        navigate("/work-packages")
+                    }}/>
+                    <Button label="Time-planning" onClick={() => {
+                        selectProject(props.project_id)
+                        navigate("/time-planning")
+                    }}/>
+                </div>
+
             </div>
         </div>
     )
