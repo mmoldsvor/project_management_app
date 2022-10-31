@@ -125,7 +125,7 @@ def work_package(jwt_data, project_id, work_package_id):
     
     deliverable_id = get_connected_deliverable(work_package.id)
     if deliverable_id is not None:
-        work_package_dict['deliverable_id'] = deliverable_id 
+        work_package_dict['deliverable_id'] = deliverable_id
     
     return {'work_package': work_package_output_schema.dump(work_package_dict)}, 200
 
