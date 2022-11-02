@@ -9,7 +9,7 @@ import {useNavigate} from "react-router-dom";
 import Select from "react-select";
 import {client} from "./App";
 import {useEffect, useState} from "react";
-
+import LogoutIcon from '@mui/icons-material/Logout';
 
 export default function Header(){
     const loggedIn = isLoggedIn()
@@ -50,19 +50,29 @@ export default function Header(){
                     <img style={{height: 50}} src={blue_logo} />
                 </section>
             </div>
-            <div className={"header__login_loggedin"}>
-                {loggedIn && <AccountCircleIcon
+            {loggedIn && <div className={"header__login_loggedin"}>
+                <AccountCircleIcon
                     className={"header__loggedin"}
                     onClick={() => navigate("/summary")}
                     sx={{ fontSize: 40 }}/>
-                }
-                {!loggedIn && <Button
-                    className="header__login"
-                    onClick={() => navigate("/login")}
-                    label="Log in"
-                    color={"rgb(199, 199, 255)"}
-                />}
-            </div>
+                <LogoutIcon
+                    className={"header__loggedin"}
+                    onClick={() => {
+                        localStorage.removeItem("selected_project-id")
+                        localStorage.removeItem("login-token")
+                        navigate("/login")
+                    }}
+                    sx={{ fontSize: 40 }}
+                />
+            </div>}
+            {!loggedIn && <div className={"header__login_loggedin"}>
+                <Button
+                className="header__login"
+                onClick={() => navigate("/login")}
+                label="Log in"
+                color={"rgb(199, 199, 255)"}
+                />
+            </div>}
             {loggedIn && <div className={"header__deliverables"}>
                 <Select
                     className={"header__select"}
@@ -71,13 +81,9 @@ export default function Header(){
                         if (e.value === ""){
                             navigate("/new-project")
                         }
-                        else {
-                            if (selected_project === "" && e.value !== "") {
-                                navigate("/")
-                            }
-                        }
                         localStorage.setItem("selected_project-id", e.value)
                         setCurrentProject(e)
+                        window.location.reload()
                     }}
                     options={projectOptions}
                 />
