@@ -208,7 +208,7 @@ export default function ProjectWorkpackages() {
                 </div>
                 <div className={"deliverables__grid_right"}>
                     <Typography className={"general__inner_element"} variant={"h5"}>Work-Packages</Typography>
-                    <div className={"deliverables__tables"}>
+                    <div className={"fullSize__tables"}>
                         <DataGrid
                             rows={workPackageRows}
                             onCellEditCommit={e => updateWorkPackage(e)}

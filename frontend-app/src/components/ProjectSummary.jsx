@@ -46,6 +46,12 @@ const defaultEdgeOptions = {
 export default function ProjectSummary(){
     const navigate = useNavigate()
     const [projectInfo, setProjectInfo] = useState({})
+    useEffect(() => {
+        loadProjectInfo()
+        loadWorkPackages()
+        createNodes()
+        loadResourceGraph()
+    }, [])
 
     const loadProjectInfo = async () => {
         const projectInfo = await client.fetchProjectInfo()
@@ -88,11 +94,7 @@ export default function ProjectSummary(){
         })
         setWorkPackageRows(tempWorkPackageRows)
     }
-    useEffect(() => {
-        loadProjectInfo()
-        loadWorkPackages()
-        createNodes()
-    }, [])
+
 
     const [workPackageRows, setWorkPackageRows] = useState([])
     const workPackageColumns : GridColDef = [
@@ -119,7 +121,7 @@ export default function ProjectSummary(){
 
 
     const [nodes, setNodes, onNodesChange] = useNodesState([]);
-    const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
+
     const createNodes = async () => {
         const response = await client.fetchWorkPackages()
         const workPackages = response?.work_packages
@@ -137,10 +139,9 @@ export default function ProjectSummary(){
             }
         })
         setNodes(tempNodes)
-        await loadNodesFromDatabase()
+        const edges = await loadNodesFromDatabase()
         const restoredNodes = await restoreFlow(tempNodes)
-        console.log(restoredNodes)
-        await create_critical_path(restoredNodes)
+        await create_critical_path(restoredNodes, edges)
     }
 
     const [relations, setRelations] = useState([])
@@ -166,7 +167,7 @@ export default function ProjectSummary(){
             })
         })
         setRelations(tempRelations)
-        setEdges(tempEdges)
+        return tempEdges
     }
     const [rfInstance, setRfInstance] = useState(null);
     const restoreFlow = async (tempNodes) => {
@@ -185,9 +186,8 @@ export default function ProjectSummary(){
         }
 
     }
-
-    const [fittingObject, setFittingObject] = useState({ x: 250, y: 0, zoom: 0.6 })
-    const create_critical_path = async (loaded_nodes) => {
+    const [reactFlow, setReactFlow] = useState([])
+    const create_critical_path = async (loaded_nodes, edges) => {
         const time_schedule = await client.fetchTimeSchedule()
         const tempNodes = []
         console.log(loaded_nodes)
@@ -204,22 +204,62 @@ export default function ProjectSummary(){
                         early_start: pack?.early_start,
                         float: pack?.float,
                         late_finish: pack?.late_finish,
-                        late_start: pack?.late_start
+                        late_start: pack?.late_start,
+                        duration: pack?.duration
                     },
                     position: {x: equalNode?.position.x, y: equalNode?.position.y}
                 })
             }
         }
-        const xs = tempNodes.map(node => parseInt(node.position.x))
-        const y = tempNodes.map(node => node.position.y)
-        console.log(xs)
-        console.log(Math.min(xs))
         setNodes(tempNodes)
+        console.log(tempNodes)
+        setReactFlow(_ => {
+            return (tempNodes.length !== 0) ?
+                 [<ReactFlow
+                    style={{"z-index": "0"}}
+                    zoomOnScroll={false}
+                    preventScrolling={false}
+                    nodes={tempNodes}
+                    edges={edges}
+                    nodeTypes={nodeTypes}
+                    edgeTypes={edgeTypes}
+                    defaultEdgeOptions={defaultEdgeOptions}
+                    connectionLineComponent={CustomConnectionLine}
+                    connectionLineStyle={connectionLineStyle}
+                    onInit={setRfInstance}
+                    fitView
+                />]
+            : []
+        })
+    }
+    const [svgImage, setSvgImage] = useState("")
+    const loadResourceGraph = async () => {
+        const resourceGraph = await client.fetchResourceUse()
+        console.log(resourceGraph.svg_data)
+        setSvgImage(_ => resourceGraph.svg_data)
     }
 
     return (
         <div className={"general__outer_div"}>
-            <Typography variant={"h3"}>Project summary: </Typography>
+            <Typography variant={"h3"}>{projectInfo.name}: </Typography>
+            <Typography>{projectInfo.description}</Typography>
+            {reactFlow?.length !== 0 && <div>
+                <Typography className={"general__inner_element"} variant={"h5"}>Time-planning:</Typography>
+                <Typography className={"general__inner_element"}>Red path is critical path</Typography>
+                <div style={{
+                    height: window.innerHeight/2,
+                    width: "100%"
+                }}>
+                    {reactFlow}
+                </div>
+            </div>}
+            {svgImage?.length !== 0 && <div>
+                <Typography className={"general__inner_element"} variant={"h5"}>Resource usage: </Typography>
+                <div className={"general__inner_element"} dangerouslySetInnerHTML={{__html: svgImage}}>
+                </div>
+            </div>}
+
+
             <div className="deliverables__grid">
                 <div className={"deliverables__grid_left"}>
                     <Typography className={"general__inner_element"} variant={"h5"}>Deliverables</Typography>
@@ -228,11 +268,11 @@ export default function ProjectSummary(){
                             rows={deliverableRows}
                             columns={deliverableColumns}
                         />
-                     </div>
+                    </div>
                 </div>
-                {subDeliverableRows.length !== 0 && <div className={"deliverables__grid_right"}>
+                {!projectInfo?.deliverable_only && <div className={"deliverables__grid_right"}>
                     <div>
-                        <Typography className={"general__inner_element"} variant={"h5"}>Sub-deliverables</Typography>
+                        <Typography className={"general__inner_element"} variant={"h5"}>Sub-Deliverables</Typography>
                         <div className={"deliverables__tables"}>
                             <DataGrid
                                 rows={subDeliverableRows}
@@ -241,8 +281,19 @@ export default function ProjectSummary(){
                         </div>
                     </div>
                 </div>}
+                {projectInfo?.deliverable_only && <div className={"deliverables__grid_right"}>
+                    <div>
+                        <Typography className={"general__inner_element"} variant={"h5"}>Work-Packages</Typography>
+                        <div className={"deliverables__tables"}>
+                            <DataGrid
+                                rows={workPackageRows}
+                                columns={workPackageColumns}
+                            />
+                        </div>
+                    </div>
+                </div>}
             </div>
-            <div style={{"padding-right": "200px", "padding-top": "50px"}}>
+            {!projectInfo?.deliverable_only && <div style={{"padding-right": "200px", "padding-top": "50px"}}>
                 <Typography className={"general__inner_element"} variant={"h5"}>Work-Packages</Typography>
                 <div className={"deliverables__tables"}>
                     <DataGrid
@@ -250,26 +301,7 @@ export default function ProjectSummary(){
                         columns={workPackageColumns}
                     />
                 </div>
-            </div>
-            <div>
-                <Typography className={"general__inner_element"} variant={"h5"}>Time-planning</Typography>
-                <div style={{
-                    height: window.innerHeight/2,
-                    width: "100%"
-                }}>
-                    <ReactFlow
-                        nodes={nodes}
-                        edges={edges}
-                        nodeTypes={nodeTypes}
-                        edgeTypes={edgeTypes}
-                        defaultEdgeOptions={defaultEdgeOptions}
-                        connectionLineComponent={CustomConnectionLine}
-                        connectionLineStyle={connectionLineStyle}
-                        onInit={setRfInstance}
-                        defaultViewport={fittingObject}
-                    />
-                </div>
-            </div>
+            </div>}
         </div>
     )
 }

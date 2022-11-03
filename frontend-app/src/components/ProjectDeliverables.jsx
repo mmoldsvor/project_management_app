@@ -19,21 +19,15 @@ Subdeliverable: supporting deliverable, they are smaller components of the proje
 const databaseIDs = {}
 export default function ProjectDeliverables() {
     const navigate = useNavigate()
-    const [userState, setUserState] = useState({
-        "index": 0,
-        "layers": "2"
-    })
-    const changeHandler = (e) => {
-        setUserState(prevState => {return {...prevState, [e.target.name]: e.target.value}})
-    }
+    const [deliverablesOnly, setDeliverablesOnly] = useState(true)
+
     const [projectInfo, setProjectInfo] = useState({})
     const loadProjectInfo = async () => {
         const projectInfo = await client.fetchProjectInfo()
         setProjectInfo(projectInfo.project)
-        const tempDeliverables = {}
+        setDeliverablesOnly(_ => projectInfo.project.deliverable_only)
         let tempDeliverablesRows = []
         let tempSubDeliverablesRows = []
-        const tempSubDeliverables = {}
         projectInfo?.project?.deliverables.forEach(deliverable => {
             setWorkingOn("deliverables")
             const id = "deliv: " +  ((tempDeliverablesRows?.at(-1)?.id?.split(":")[1]) ? parseInt(tempDeliverablesRows?.at(-1)?.id?.split(":")[1]) + 1 : 1)
@@ -147,25 +141,25 @@ export default function ProjectDeliverables() {
                         addRow={addRow}
                     />}
 
-                    {workingOn === "subDeliverables" && userState.layers === "2" && <SubDeliverables
+                    {workingOn === "subDeliverables" && deliverablesOnly === false && <SubDeliverables
                         deliverableRows={deliverableRows}
                         setWorkingOn={setWorkingOn}
                         addRow={addRow}
                         navigateToWorkPackages={navigateToWorkPackages}
                     />}
-                    {workingOn === "subDeliverables" && userState.layers === "1" && navigateToWorkPackages()}
+                    {workingOn === "subDeliverables" && deliverablesOnly === true && navigateToWorkPackages()}
                 </div>
 
                 <div className={"deliverables__grid_right"}>
                     <Typography className={"general__inner_element"} variant={"h5"}>Deliverables</Typography>
-                    <div className={"deliverables__tables"}>
+                    <div className={(deliverablesOnly) ? "fullSize__tables" : "deliverables__tables"}>
                         <DataGrid
                             rows={deliverableRows}
                             columns={deliverableColumns}
                             onCellEditCommit={e => updateDeliverableRow(e)}
                         />
                     </div>
-                    {userState.layers === "2" && <div>
+                    {deliverablesOnly === false && <div>
                         <Typography className={"general__inner_element"} variant={"h5"}>Sub-deliverables</Typography>
                         <div className={"deliverables__tables"}>
                             <DataGrid

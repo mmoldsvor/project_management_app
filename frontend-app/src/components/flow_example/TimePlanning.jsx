@@ -13,6 +13,8 @@ import {Typography} from "@mui/material";
 import RelationsDialog from "./SimpleDialog";
 import {client} from "../App";
 import InfoDrawer from "../Drawer";
+import {useNavigate} from "react-router-dom";
+import Button from "../Button";
 
 const infoText = `Finish to start: task B can only start when task A is done
 Finish to finish: task B cannot be completed as long as task A is not done
@@ -49,11 +51,11 @@ const defaultEdgeOptions = {
 const nameToId = {}
 const idToName = {}
 const idToDatabaseIDs = {}
-const flowKey = 'timeplanning-flow';
 
 const TimePlanning = () => {
     const [nodes, setNodes, onNodesChange] = useNodesState([]);
     const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
+    const navigate = useNavigate()
 
     const createNodes = async () => {
         const response = await client.fetchWorkPackages()
@@ -160,6 +162,7 @@ const TimePlanning = () => {
         saveFlow()
     }
 
+
     const [dialogState, setDialogState] = useState({})
     const handleConnect = (e) => {
         setNewEdge(e)
@@ -191,7 +194,6 @@ const TimePlanning = () => {
         }
     }
 
-
     const restoreFlow = async (tempNodes) => {
         const flow = await client.fetchTimePlanning()
         let allIncluded = true
@@ -201,52 +203,26 @@ const TimePlanning = () => {
             }
         })
         if (flow && allIncluded) {
-            const { x = 0, y = 0, zoom = 1 } = flow.viewport;
             setNodes(flow.nodes || []);
         }
     }
-
-    const create_critical_path = async () => {
-        const time_schedule = await client.fetchTimeSchedule()
-        let x_pos = 50;
-        let y_pos = 80;
-        console.log(time_schedule)
-        const tempNodes = []
-        for (const key in time_schedule) {
-            if (time_schedule.hasOwnProperty(key)) {
-                const pack = time_schedule[key]
-                const equalNode = nodes.find(node => node.id === `${key}`)
-                tempNodes.push({
-                    id: `${key}`,
-                    type: 'custom',
-                    data: {
-                        label: key,
-                        early_finish: pack?.early_finish,
-                        early_start: pack?.early_start,
-                        float: pack?.float,
-                        late_finish: pack?.late_finish,
-                        late_start: pack?.late_start
-                    },
-                    position: {x: equalNode?.position.x, y: equalNode?.position.y}
-                })
-            }
-        }
-        setNodes(tempNodes)
-
+    const toSummary = async () => {
+        await saveFlow()
+        navigate("/summary")
     }
 
     return (
         <div className="relations__outer">
             <div className={"infoGrid"} style={{"marginTop" : "30px"}}>
-                <Typography style={{"margin-left": "50px"}} variant={"h4"}>Time planning</Typography>
+                <Typography variant={"h4"}>Time planning</Typography>
                 <InfoDrawer
                     title={"Time planning"}
                     info_text={infoText}
                 />
             </div>
             <div style={{
-                height: window.innerHeight,
-                width: "98%"
+                height: window.innerHeight/1.5,
+                width: "100%"
             }}>
                 <RelationsDialog
                     selectedValue={selectedValue}
@@ -268,10 +244,15 @@ const TimePlanning = () => {
                     connectionLineComponent={CustomConnectionLine}
                     connectionLineStyle={connectionLineStyle}
                     onInit={setRfInstance}
-                    onNodeDoubleClick={create_critical_path}
+                    defaultViewport={{x: 300, y: 1, zoom: 0.75}}
+                    style={{"z-index": "0"}}
                 />
             </div>
-
+            <Button
+                label={"Continue to summary"}
+                onClick={toSummary}
+                color={"lightblue"}
+            />
         </div>
     );
 };

@@ -215,6 +215,18 @@ export default class OurClient {
         });
         return handleResponse(resp);
     }
+    async fetchResourceUse(){
+        const token = checkToken()
+        const project_id = this.getProjectId()
+        const url = new URL(`${ourURL}/project/${project_id}/resource_graph`,this.baseUrl)
+        const resp = await fetch(url, {
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": "Bearer " + token
+            }
+        });
+        return handleResponse(resp);
+    }
 }
 
 async function handleResponse(response){

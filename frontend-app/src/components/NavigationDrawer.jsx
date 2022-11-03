@@ -11,9 +11,9 @@ import {isLoggedIn} from "../authorization/authorization";
 
 export default function NavigationDrawer(props) {
     const navigate = useNavigate()
-    const selected_project = localStorage.getItem("selected_project-id")
-    return (selected_project !== "" && selected_project !== null) ? (
+    return (
         <div>
+            <br/>
             <div className={"navigaton_drawer__inner_container"} onClick={() => navigate("/deliverables")}>
                 <DeliveryDiningIcon
                     sx={{ fontSize: 30 }}
@@ -47,8 +47,5 @@ export default function NavigationDrawer(props) {
                 </Typography>}
             </div>
         </div>
-
     )
-        :
-        (<div></div>);
 }

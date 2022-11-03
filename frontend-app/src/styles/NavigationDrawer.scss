@@ -1,20 +1,28 @@
 .navigaton_drawer__div_closed{
   width: 60px;
-  padding-top: 30px;
   text-align: left;
   margin-left: 10px;
-  //border-right: black;
-  //border-width: 1px;
-  //border-right-style: solid;
+  position: fixed;
+  background: white;
+  border-right: black;
+  border-width: 1px;
+  border-right-style: solid;
+  height: 100%;
+  padding-right: 10px;
 }
 .navigaton_drawer__div_open{
-  margin-top: 30px;
   text-align: left;
+  position: fixed;
   margin-left: 10px;
+  margin-top: 2px;
+  padding-right: 30px;
   width: 180px;
-  //border-right: black;
-  //border-width: 1px;
-  //border-right-style: solid;
+  border-right: black;
+  border-width: 1px;
+  border-right-style: solid;
+  background: white;
+  height: 100%;
+  z-index: 1;
 }
 .navigaton_drawer__inner_container{
   display: flex;
