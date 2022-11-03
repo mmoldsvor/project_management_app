@@ -199,7 +199,7 @@ const TimePlanning = () => {
         let allIncluded = true
         tempNodes.forEach(node => {
             if (flow.nodes.findIndex(flow_node => flow_node.id === node.id) === - 1) {
-                allIncluded = false
+                flow.nodes.push(node)
             }
         })
         if (flow && allIncluded) {
