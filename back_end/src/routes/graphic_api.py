@@ -69,13 +69,45 @@ def time_schedule(jwt_data, project_id):
     return work_package_dates
 
 
-@graphic_api.route('/graph_work_package', methods=['GET'])
-def graph_test():
-    input = request.get_json()
+@graphic_api.route('/project/<project_id>/resource_graph', methods=['GET'])
+def resource_graph(jwt_data, project_id): 
+    if not has_project_access(jwt_data['uuid'], project_id):
+        return {'errors': 'You do not have access to this project'}, 401
+
+    work_package_query = WorkPackageTable.select(
+        WorkPackageTable
+    ).where(
+        WorkPackageTable.project == project_id
+    )
+
+    work_package_dict = {}
+    for work_package in work_package_query:
+        work_package_dict[work_package.id] = WorkPackage(
+            name=work_package.name,
+            resources=work_package.resources,
+            duration=work_package.duration
+        )
+
+    relation_query = WorkPackageRelationTable.select(
+        WorkPackageRelationTable
+    ).where(
+        WorkPackageRelationTable.project == project_id
+    )
+
+    relations = []
+    for relation in relation_query:
+        relations.append(work_package_relation_output_schema.dump(relation))
+    
+    graph = Graph()
+    for relation in relations:
+        target = work_package_dict[relation['target']]
+        source = work_package_dict[relation['source']]
+        graph.add_edge(source, target, (relation['relation'], relation['duration']))
+
     try:
-        data = relations_schema.load(input)
-    except ValidationError as err:
-        return {'errors': err.messages}, 422
+        traverse_package_graph(graph)
+    except LoopError:
+        return {'errors': 'Graph contains loops'}, 422
 
     graph = Graph()
     for relation in data['relations']:

@@ -5,3 +5,4 @@ peewee==3.15.2
 marshmallow==3.18.0
 pyjwt==2.5.0
 cryptography==38.0.1
+matplotlib==3.6.2
